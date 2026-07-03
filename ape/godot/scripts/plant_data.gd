@@ -73,6 +73,18 @@ const SEED_COLORS: Dictionary[PlantType, Color] = {
 	PlantType.CHERRY: Color(0.7, 0.05, 0.15),
 }
 
+## The five plants that offer pollen, and the eight hybrids bred from them.
+## Kept as explicit lists (not a range check on PlantType's int values) so the
+## Step 6 goal panel can draw one random base type + three random hybrids
+## without depending on where the split falls in the enum.
+const BASE_TYPES: Array[PlantType] = [
+	PlantType.DAISY, PlantType.TULIP, PlantType.BERRY, PlantType.APPLE, PlantType.SUNFLOWER,
+]
+const HYBRID_TYPES: Array[PlantType] = [
+	PlantType.ROSE, PlantType.LAVENDER, PlantType.STARBLOOM, PlantType.ORCHID,
+	PlantType.FIRELILY, PlantType.PLUM, PlantType.PUMPKIN, PlantType.CHERRY,
+]
+
 ## Human-readable names, used for the Step 5 combo chart's tooltips. These
 ## also double as the lookup key into seedling.tscn's Bloom/<Name> children
 ## (every Bloom child is named exactly one of these strings), so a second

@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1"]
 [ext_resource type="Shader" path="res://assets/shaders/water_meter.gdshader" id="2"]
 [ext_resource type="Script" path="res://scripts/combo_chart.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/goal_panel.gd" id="4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1"]
 shader = ExtResource("2")
@@ -84,3 +85,16 @@ offset_bottom = 128.0
 grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_chart_bg")
 script = ExtResource("3")
+
+[node name="GoalPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -216.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 182.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_chart_bg")
+script = ExtResource("4")

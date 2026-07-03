@@ -14,7 +14,7 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ### [`scenes/main.tscn`](scenes/main.md) — the level
 
-`Main` (`Node2D`), script: `scripts/main.gd`. The game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, plots, HUD, intro screen) into the single static level that currently exists — there is no level-loading/scene-management system yet. `main.gd` pauses the tree on `_ready()` until `IntroScreen` signals `start_requested`, and owns spawning: it connects to every child's `seed_popped` signal (if it has one) in `_ready()` and instantiates `seed.tscn` beside the plant that popped it, and to every child's `seed_planted` signal (every `Plot`) to instantiate a new `seedling.tscn` there at `growth = 0`. Step 6 will extend this same script with goal tracking and win-overlay logic.
+`Main` (`Node2D`, `groups=["main"]`), script: `scripts/main.gd`. The game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, plots, HUD, intro screen) into the single static level that currently exists — there is no level-loading/scene-management system yet. `main.gd` pauses the tree on `_ready()` until `IntroScreen` signals `start_requested`, and owns spawning: it connects to every child's `seed_popped` signal (if it has one) in `_ready()` and instantiates `seed.tscn` beside the plant that popped it, and to every child's `seed_planted` signal (every `Plot`) to instantiate a new `seedling.tscn` there at `growth = 0`. (Step 6) It also owns goal tracking and the win overlay: it rolls a random 4-plant goal set (`PlantData.BASE_TYPES` + `PlantData.HYBRID_TYPES`) once per level via `randomize()`, listens for every `Seedling`'s `bloomed` signal (plus an initial scan for plants already bloomed at level start) to check goals off, and spawns `win_overlay.tscn` once all 4 are checked. See `main.md` for the full mechanism.
 
 ### [`scenes/intro_screen.tscn`](scenes/intro_screen.md) — how-to-play overlay
 
@@ -52,9 +52,13 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 `Plot` (`Area2D`, group `plot`), script: `scripts/plot.gd`. A passive detectable like `seed.tscn` — a dirt mound with a pulsing "plantable" marker while empty. `plant(type)` (called by `player.gd` when the bee hovers an empty plot while carrying a seed) marks it occupied, plays its own pop/puff/sound feedback, and emits `seed_planted(hybrid_type, at_position)` for `Main` to instantiate a new `Seedling` there at `growth = 0`.
 
-### [`scenes/hud.tscn`](scenes/hud.md) — water meter and combo chart
+### [`scenes/hud.tscn`](scenes/hud.md) — water meter, combo chart, and goal panel
 
-`HUD` (`CanvasLayer`), script: `scripts/hud.gd`. On-screen water meter that listens to the player's `water_level_changed` signal. Also hosts `ComboChart` (Step 5), a self-contained `Panel` with its own script (`scripts/combo_chart.gd`) that is independent of `hud.gd` — it reads `PlantData` directly and owns its own input handling.
+`HUD` (`CanvasLayer`), script: `scripts/hud.gd`. On-screen water meter that listens to the player's `water_level_changed` signal. Also hosts `ComboChart` (Step 5) and `GoalPanel` (Step 6), both self-contained `Panel`s with their own scripts, independent of `hud.gd` and each other — `ComboChart` reads `PlantData` directly, `GoalPanel` reads `Main`'s runtime-selected goal set via the `main` group.
+
+### [`scenes/win_overlay.tscn`](scenes/win_overlay.md) — win screen
+
+`WinOverlay` (`CanvasLayer`), script: `scripts/win_overlay.gd`. Instantiated by `Main` once all 4 goals are checked (Step 6): congratulatory message, a particle burst, a sound sting, and a "Play again" button that reloads the level for a fresh random goal set.
 
 ### `scripts/plant_data.gd` — plant data table
 
@@ -68,13 +72,15 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 `PlantIconSource` (`class_name`, not attached to any node). `bloom_shapes(type)` instantiates `seedling.tscn` off-tree (never added to the live scene), reads the polygon+color data off the matching `Bloom/<Name>` subtree (safe immediately after `.instantiate()`, since these are baked scene-resource values, not runtime-assigned), then frees the temporary instance. Used once per type appearing in `PlantData.all_combos()` (both parents and the hybrid result) by `combo_chart.gd` at `_ready()` to build its mini icons without ever giving a decorative icon a live `Seedling`'s `Area2D`/collision/group membership.
 
-### `scenes/hud.tscn` — water meter and combo chart
+### `scenes/hud.tscn` — water meter, combo chart, and goal panel
 
 `HUD` (`CanvasLayer`), script: `scripts/hud.gd`, with a `Control` anchored top-left containing a `ProgressBar` (`WaterMeter`, range 0-1). `hud.gd` finds the player via the `player` group in `_ready()` and connects to its `water_level_changed` signal — the HUD reaches out to the player rather than the player knowing about the HUD, so `player.gd` stays UI-agnostic.
 
 `WaterMeter` is themed blue (`StyleBoxFlat` overrides on `background`/`fill`) with a `ShaderMaterial` (`assets/shaders/water_meter.gdshader`) giving both bars a rippling top edge (vertex displacement) and a shimmering brightness pulse (fragment) — purely cosmetic, doesn't touch `value`. `clip_contents = true` on `WaterMeter` keeps its `Bubbles` child (`CPUParticles2D`, rectangle emission spanning the bar) contained to the bar's rect as small bubbles drift upward and fade, matching the CPUParticles2D convention used elsewhere (`WaterDrip`, `PollenPuff`).
 
 `ComboChart` (Step 5, `Panel`, script `scripts/combo_chart.gd`) is a second top-level child of `HUD`, anchored `CENTER_RIGHT` with `grow_horizontal = GROW_DIRECTION_BEGIN` so it stays pinned to the viewport's right edge on resize. It has no child nodes — all 8 rows are custom-drawn in `_draw()`, generated from `PlantData.all_combos()` at `_ready()` (icon shapes cached via `PlantIconSource.bloom_shapes()`), so the chart can never hand-drift out of sync with `plant_data.gd`'s actual combo outcomes. Per-row tooltips are computed from mouse position via an overridden `_get_tooltip()` rather than per-row child nodes. `_unhandled_input()` toggles `visible` on the `toggle_combo_chart` action ("1"), independent of `hud.gd` and `player.gd`.
+
+`GoalPanel` (Step 6, `Panel`, script `scripts/goal_panel.gd`) is a third top-level child of `HUD`, anchored `TOP_RIGHT` and positioned directly above `ComboChart` (same width/horizontal offsets, so the two read as one stack down the right edge). Same custom-`_draw()`, no-child-nodes shape as `ComboChart`, but its rows come from `Main`'s runtime-rolled `goal_types` rather than static `PlantData`: it finds `Main` via `get_tree().get_first_node_in_group("main")` (same pattern `hud.gd` uses to find the player) and connects to `goal_selected`/`goal_checked`. Checked rows draw a ✓ and a brief scale-pop "flourish" (a decaying per-type timer read back in `_draw()`, not a `Tween`). `_unhandled_input()` toggles `visible` on `toggle_goal_panel` ("2"). See `hud.md` for the full mechanism and `main.md` for how `Main` selects and tracks goals.
 
 ## Movement model
 
@@ -95,8 +101,8 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ## Known gaps / not yet built
 
-- The pollination game (REQUIREMENTS.md) is at Step 5 of 8: the full core loop is playable end to end — bloom, pollinate, water to pop a seed, carry it (fly into it), plant it on an empty `plot.tscn`, and water the resulting hybrid seedling to bloom. Hybrids have real bloom visuals now and are correctly inert to pollen (`PlantData.accepts_pollen`). The combo chart (`ComboChart`, toggled with "1") shows all 8 combos, generated from `plant_data.gd`. Still missing: the goal panel and win condition (Step 6), enemies knocking pollen off the bee (Step 7), and the fit-and-finish pass (Step 8).
-- No level-transition, scoring, or win/lose — drinking and watering seedlings both move `water_level` but nothing else consumes it.
+- The pollination game (REQUIREMENTS.md) is at Step 6 of 8: the full core loop is playable end to end and winnable — bloom, pollinate, water to pop a seed, carry it (fly into it), plant it on an empty `plot.tscn`, water the resulting hybrid seedling to bloom, and grow all 4 of the round's randomly-chosen goal plants to trigger the win overlay. Hybrids have real bloom visuals and are correctly inert to pollen (`PlantData.accepts_pollen`). The combo chart (`ComboChart`, "1") and goal panel (`GoalPanel`, "2") both show live, data-driven state. Still missing: enemies knocking pollen off the bee (Step 7), and the fit-and-finish pass (Step 8).
+- No level-transition or scoring beyond the single win condition — drinking and watering seedlings both move `water_level` but nothing else consumes it, and there's no losing state (Step 7's enemies are pressure, not failure).
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.
 

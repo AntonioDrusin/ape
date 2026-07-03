@@ -12,6 +12,11 @@ enum State { GROWING, BLOOMED, POLLINATED, SEED_GROWING }
 ## signals-over-tree-reaching rule.
 signal seed_popped(hybrid_type: PlantData.PlantType, at_position: Vector2)
 
+## Emitted on entering BLOOMED (from GROWING or after a seed pops). Main
+## listens on every Seedling to track Step 6 goal progress — plants don't
+## know about goals, per CODING.md's signals-over-tree-reaching rule.
+signal bloomed(bloom_type: PlantData.PlantType)
+
 const MIN_SCALE: float = 0.12
 const BLOOM_START: float = 70.0
 
@@ -22,6 +27,7 @@ enum PollinateResult { SUCCESS, FIZZLE }
 
 var state: State = State.GROWING:
 	set(value):
+		var entering_bloom: bool = value == State.BLOOMED and state != State.BLOOMED
 		state = value
 		# The POLLINATED shimmer is only animated during actual gameplay —
 		# gating set_process on the editor hint keeps the @tool preview
@@ -29,6 +35,8 @@ var state: State = State.GROWING:
 		# inside the editor.
 		set_process(state == State.POLLINATED and not Engine.is_editor_hint())
 		_update_visuals()
+		if entering_bloom and not Engine.is_editor_hint():
+			bloomed.emit(bloom_type)
 
 ## Hybrid type resolved by a successful pollinate() call, held until it pops
 ## as a seed.
@@ -114,6 +122,14 @@ func water(delta: float) -> void:
 			growth += 100.0 / grow_time * delta
 		State.POLLINATED, State.SEED_GROWING:
 			seed_progress += 100.0 / seed_grow_time * delta
+
+
+## True while BLOOMED. Main's initial goal-progress scan (Step 6) uses this
+## rather than the `bloomed` signal for plants that start already bloomed in
+## the editor — child `_ready()` (and any resulting `bloomed` emission) runs
+## before Main's, so those instances would otherwise never be seen.
+func is_bloomed() -> bool:
+	return state == State.BLOOMED
 
 
 ## Collects this plant's pollen. Only meaningful while BLOOMED — callers
