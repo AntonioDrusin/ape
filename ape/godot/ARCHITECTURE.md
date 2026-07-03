@@ -14,7 +14,11 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ### [`scenes/main.tscn`](scenes/main.md) — the level
 
-`Main` (`Node2D`), script: `scripts/main.gd`. The game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, HUD) into the single static level that currently exists — there is no level-loading/scene-management system yet. `main.gd` currently just owns spawning: it connects to every child's `seed_popped` signal (if it has one) in `_ready()` and instantiates `seed.tscn` beside the plant that popped it. Step 6 will extend this same script with goal tracking and win-overlay logic.
+`Main` (`Node2D`), script: `scripts/main.gd`. The game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, HUD, intro screen) into the single static level that currently exists — there is no level-loading/scene-management system yet. `main.gd` pauses the tree on `_ready()` until `IntroScreen` signals `start_requested`, and owns spawning: it connects to every child's `seed_popped` signal (if it has one) in `_ready()` and instantiates `seed.tscn` beside the plant that popped it. Step 6 will extend this same script with goal tracking and win-overlay logic.
+
+### [`scenes/intro_screen.tscn`](scenes/intro_screen.md) — how-to-play overlay
+
+`IntroScreen` (`CanvasLayer`), script: `scripts/intro_screen.gd`. A full-screen instructions overlay shown while `Main` keeps the tree paused; presses Space (`ui_accept`) to emit `start_requested` and free itself, letting `Main` unpause and start the level.
 
 ### [`scenes/platform.tscn`](scenes/platform.md) — static level geometry
 
