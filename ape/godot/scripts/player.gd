@@ -32,7 +32,7 @@ signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
-const SFX_LOOP_VOLUME_DB := 4.0
+const SFX_LOOP_VOLUME_DB := -3.0
 const SFX_FADE_SPEED := 6.0
 
 var water_level: float = 0.0
