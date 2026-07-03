@@ -25,9 +25,13 @@ signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 @onready var seed_carry: Polygon2D = $Visual/SeedCarry
 @onready var seed_pickup_sound: AudioStreamPlayer2D = $Visual/SeedPickupSound
 @onready var seed_pickup_puff: CPUParticles2D = $Visual/SeedCarry/SeedPickupPuff
+@onready var drink_sound: AudioStreamPlayer2D = $Visual/DrinkSound
+@onready var water_sound: AudioStreamPlayer2D = $Visual/WaterSound
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
+const SFX_LOOP_VOLUME_DB := -10.0
+const SFX_FADE_SPEED := 6.0
 
 var water_level: float = 0.0
 var facing_x: float = 1.0
@@ -35,6 +39,8 @@ var has_pollen: bool = false
 var pollen_type: PlantData.PlantType = PlantData.PlantType.DAISY
 var has_seed: bool = false
 var seed_type: PlantData.PlantType = PlantData.PlantType.DAISY
+var _drink_volume: float = 0.0
+var _water_volume: float = 0.0
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -131,6 +137,9 @@ func _physics_process(delta: float) -> void:
 	if water_drip:
 		water_drip.emitting = watering
 
+	_drink_volume = _update_loop_sound(drink_sound, drinking, _drink_volume, delta)
+	_water_volume = _update_loop_sound(water_sound, watering, _water_volume, delta)
+
 
 ## Hovering a BLOOMED flower with an empty pollen slot collects it; carrying
 ## a different-colored pollen attempts to pollinate it (fizzle or success);
@@ -199,3 +208,17 @@ func _set_seed(carrying: bool, type: PlantData.PlantType) -> void:
 func steal_water(amount: float) -> void:
 	water_level = maxf(water_level - amount, 0.0)
 	water_level_changed.emit(water_level)
+
+
+## Fades a looping woosh's volume toward on/off rather than hard-cutting it,
+## since starting/stopping an AudioStreamPlayer2D mid-waveform clicks. Starts
+## the stream once the fade-in begins and stops it once faded fully out so it
+## isn't silently spinning in the background while inactive.
+func _update_loop_sound(sound: AudioStreamPlayer2D, active: bool, volume: float, delta: float) -> float:
+	volume = move_toward(volume, 1.0 if active else 0.0, SFX_FADE_SPEED * delta)
+	if volume > 0.0 and not sound.playing:
+		sound.play()
+	sound.volume_db = SFX_LOOP_VOLUME_DB + linear_to_db(maxf(volume, 0.001))
+	if volume <= 0.0 and sound.playing:
+		sound.stop()
+	return volume
