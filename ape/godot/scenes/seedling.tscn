@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/seedling.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/seed_pop.wav" id="2"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_hover"]
 radius = 24.0
@@ -161,3 +162,27 @@ initial_velocity_max = 14.0
 scale_amount_min = 1.0
 scale_amount_max = 2.0
 color = Color(1, 0.95, 0.6, 0.9)
+
+[node name="SeedPod" type="Polygon2D" parent="Bloom"]
+visible = false
+position = Vector2(0, -17)
+polygon = PackedVector2Array(0, -6, 4.5, -3.5, 4.5, 3.5, 0, 6, -4.5, 3.5, -4.5, -3.5)
+
+[node name="SeedPopPuff" type="CPUParticles2D" parent="."]
+position = Vector2(0, -17)
+emitting = false
+one_shot = true
+amount = 14
+lifetime = 0.5
+explosiveness = 0.9
+direction = Vector2(0, -1)
+spread = 100.0
+gravity = Vector2(0, 200)
+initial_velocity_min = 30.0
+initial_velocity_max = 70.0
+scale_amount_min = 1.2
+scale_amount_max = 2.2
+color = Color(0.9, 0.85, 0.5, 0.85)
+
+[node name="SeedPopSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2")

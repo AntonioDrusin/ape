@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/platform.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,8 +8,10 @@
 [ext_resource type="AudioStream" uid="uid://bwbe83n6rs56a" path="res://assets/audio/happy_bee.mp3" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/seedling.tscn" id="8"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="9"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("9")
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6")

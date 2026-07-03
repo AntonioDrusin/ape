@@ -41,8 +41,33 @@ const COMBO_TABLE: Dictionary[int, PlantType] = {
 }
 
 
+## Seed colors cover all 13 types (unlike POLLEN_COLORS, which only covers
+## the 5 base plants that actually offer pollen) — used for the seed pod
+## swelling on the parent plant and the loose seed.tscn visual, both of
+## which need to show a hybrid's color too.
+const SEED_COLORS: Dictionary[PlantType, Color] = {
+	PlantType.DAISY: Color(0.98, 0.98, 0.95),
+	PlantType.TULIP: Color(1.0, 0.5, 0.75),
+	PlantType.BERRY: Color(0.62, 0.3, 0.9),
+	PlantType.APPLE: Color(0.88, 0.12, 0.12),
+	PlantType.SUNFLOWER: Color(1.0, 0.58, 0.08),
+	PlantType.ROSE: Color(0.95, 0.35, 0.45),
+	PlantType.LAVENDER: Color(0.7, 0.6, 0.9),
+	PlantType.STARBLOOM: Color(0.95, 0.92, 0.75),
+	PlantType.ORCHID: Color(0.8, 0.35, 0.75),
+	PlantType.FIRELILY: Color(0.95, 0.4, 0.15),
+	PlantType.PLUM: Color(0.4, 0.15, 0.4),
+	PlantType.PUMPKIN: Color(0.9, 0.5, 0.1),
+	PlantType.CHERRY: Color(0.7, 0.05, 0.15),
+}
+
+
 static func pollen_color(type: PlantType) -> Color:
 	return POLLEN_COLORS[type]
+
+
+static func seed_color(type: PlantType) -> Color:
+	return SEED_COLORS[type]
 
 
 static func _pair_key(a: PlantType, b: PlantType) -> int:

@@ -14,7 +14,7 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ### [`scenes/main.tscn`](scenes/main.md) — the level
 
-`Main` (`Node2D`), the game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, HUD) into the single static level that currently exists — there is no level-loading/scene-management system yet.
+`Main` (`Node2D`), script: `scripts/main.gd`. The game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, HUD) into the single static level that currently exists — there is no level-loading/scene-management system yet. `main.gd` currently just owns spawning: it connects to every child's `seed_popped` signal (if it has one) in `_ready()` and instantiates `seed.tscn` beside the plant that popped it. Step 6 will extend this same script with goal tracking and win-overlay logic.
 
 ### [`scenes/platform.tscn`](scenes/platform.md) — static level geometry
 
@@ -38,7 +38,11 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ### [`scenes/seedling.tscn`](scenes/seedling.md) — growing plant
 
-`Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`). A plant lifecycle state machine (`GROWING → BLOOMED → POLLINATED → SEED_GROWING → ...`) driven by `growth` and watered/pollinated by the player.
+`Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`). A plant lifecycle state machine (`GROWING → BLOOMED → POLLINATED → SEED_GROWING → (seed pops) → BLOOMED`), fully reachable: watering drives `GROWING`, pollination drives `POLLINATED`, and watering a `POLLINATED` plant again drives `SEED_GROWING`, which pops a seed (`seed_popped` signal, handled by `Main`) and reverts to `BLOOMED`.
+
+### [`scenes/seed.tscn`](scenes/seed.md) — popped seed
+
+`Seed` (`Area2D`, group `seed`), script: `scripts/seed.gd`. Currently inert beyond its spawn-in animation — carrying and planting land in Step 4.
 
 ### [`scenes/hud.tscn`](scenes/hud.md) — water meter
 
@@ -46,7 +50,7 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 
 ### `scripts/plant_data.gd` — plant data table
 
-`PlantData` (`class_name`, not attached to any node) is the single source of truth for plant data: the `PlantType` enum, `POLLEN_COLORS` (typed const table mapping each base type to its pollen color, read via `PlantData.pollen_color(type)`), and `COMBO_TABLE` (the 8 successful hybrid combos, read via `PlantData.combo_result(a, b)`). Gameplay and UI must both read plant facts from here — display names land in this file when Step 5's combo chart needs them; nothing else may hardcode this data.
+`PlantData` (`class_name`, not attached to any node) is the single source of truth for plant data: the `PlantType` enum, `POLLEN_COLORS` (typed const table mapping each *base* type to its pollen color, read via `PlantData.pollen_color(type)`), `SEED_COLORS` (covers all 13 types including hybrids, read via `PlantData.seed_color(type)` — used for the seed pod swelling on the parent plant and the loose `seed.tscn` visual, both of which need a color for hybrid results too), and `COMBO_TABLE` (the 8 successful hybrid combos, read via `PlantData.combo_result(a, b)`). Gameplay and UI must both read plant facts from here — display names land in this file when Step 5's combo chart needs them; nothing else may hardcode this data.
 
 `PlantType` holds `NONE = -1` (the fizzle/no-result sentinel), the five base plants at their original values `0`-`4`, and the 8 hybrid types appended after them — all with explicit values, so `bloom_type` ints already saved in `main.tscn` keep mapping to the same base plants regardless of how the enum grows. Hybrid *visuals* aren't built until Step 4; for now `PlantType` values beyond the base five are pure data, produced by pollination and not yet rendered anywhere.
 
@@ -72,10 +76,11 @@ Each scene has a short summary below; see its linked `.md` file (next to the `.t
 - Water theft: `player.gd` exposes `steal_water(amount)`, called by `enemy.gd` on touch (see `scenes/enemy.tscn` above) — clamps `water_level` down and re-emits `water_level_changed` the same way drinking does, so the HUD reacts identically regardless of which direction the level moved.
 - Watering: each physics tick, `player.gd` checks `WaterSensor`'s overlapping areas (same poll used for water landing, just filtered to the `seedling` group instead of `water`) for a `HoverZone`, resolving the hovered `Seedling` once per tick. If `water_level > 0` and a seedling is hovered, it calls `water(delta)` on the zone's parent `Seedling` (see `scenes/seedling.tscn` above), draining `water_level` from 1 to 0 over `water_drain_time` (2s) the same way drinking fills it, and re-emitting `water_level_changed`. `Proboscis` and `WaterDrip` both reflect this state so the drip is visibly the source of the growth.
 - Pollen (REQUIREMENTS.md Step 2): the same per-tick hovered-seedling lookup also drives `_handle_pollen_hover()`, independent of `water_level` — hovering only interacts with `BLOOMED` flowers. With an empty pollen slot, hovering calls `collect_pollen()` and picks it up (`has_pollen`/`pollen_type`, mirrored on `PollenBlob`). Carrying pollen and hovering the *same*-colored flower is a no-op; hovering a *different*-colored one calls `pollinate()` and reacts to the result (clears pollen either way, plays success or fizzle feedback). This is self-limiting rather than debounced: once a flower leaves `BLOOMED`, continued hovering does nothing further, the same way the watering poll above relies on `growth` capping out. `has_pollen`/`pollen_type` are exposed via `pollen_changed(has_pollen, pollen_type)`, mirroring `water_level_changed`, emitted only on actual change (not every frame while hovering). The `shed_pollen` input action (edge-triggered via `is_action_just_pressed`, bound to `Q`) drops carried pollen outright with a puff, independent of any hover target.
+- Seed production (REQUIREMENTS.md Step 3): `player.gd`'s existing `hovered_seedling.water(delta)` call site is unchanged — `seedling.gd`'s `water(delta)` now branches on `state` itself, raising `growth` while `GROWING` or `seed_progress` while `POLLINATED`/`SEED_GROWING` (a plain var mirroring how `growth` tracks `GROWING`; entering `SEED_GROWING` and popping the seed are both transitions in `seed_progress`'s setter, the same bidirectional-transition pattern `growth`'s setter already uses for `GROWING ⇄ BLOOMED`). Popping emits `seed_popped(hybrid_type, at_position)`, which `Main` (`main.gd`) listens for on every seedling to instantiate `seed.tscn` beside the plant — the plant itself never touches the scene tree above it.
 
 ## Known gaps / not yet built
 
-- The pollination game (REQUIREMENTS.md) is at Step 2 of 8: pollen pickup and pollination are playable (`BLOOMED → POLLINATED`, with a `shed_pollen` action to drop carried pollen), but `SEED_GROWING` is still unreachable — no seed production, seed carrying, plots, combo chart, goal panel, or win condition yet. Hybrid `PlantType`s exist as data (`plant_data.gd`) and are producible via pollination, but have no bloom visuals until Step 4.
+- The pollination game (REQUIREMENTS.md) is at Step 3 of 8: pollen pickup, pollination, and seed production are playable (`GROWING → BLOOMED → POLLINATED → SEED_GROWING → pop → BLOOMED`, with a `shed_pollen` action to drop carried pollen), but the popped seed is inert — no carrying, plots, combo chart, goal panel, or win condition yet. Hybrid `PlantType`s exist as data (`plant_data.gd`, now including `SEED_COLORS`) and are producible via pollination, but have no bloom visuals until Step 4.
 - No level-transition, scoring, or win/lose — drinking and watering seedlings both move `water_level` but nothing else consumes it.
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.

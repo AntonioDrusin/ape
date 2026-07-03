@@ -2,9 +2,15 @@
 extends Node2D
 
 ## Plant lifecycle: GROWING -> BLOOMED -> POLLINATED -> SEED_GROWING -> (seed
-## pops) -> BLOOMED. Watering drives GROWING; the POLLINATED and SEED_GROWING
-## states are entered by the pollination/seed mechanics of later build steps.
+## pops) -> BLOOMED. Watering drives GROWING; POLLINATED is entered by
+## pollinate(), SEED_GROWING by watering a POLLINATED plant again.
 enum State { GROWING, BLOOMED, POLLINATED, SEED_GROWING }
+
+## Emitted when a SEED_GROWING plant finishes swelling its pod and pops a
+## seed. Main listens for this on every Seedling to spawn seed.tscn — the
+## plant itself doesn't know about scenes/spawning, per CODING.md's
+## signals-over-tree-reaching rule.
+signal seed_popped(hybrid_type: PlantData.PlantType, at_position: Vector2)
 
 const MIN_SCALE: float = 0.12
 const BLOOM_START: float = 70.0
@@ -24,9 +30,22 @@ var state: State = State.GROWING:
 		set_process(state == State.POLLINATED and not Engine.is_editor_hint())
 		_update_visuals()
 
-## Hybrid type resolved by a successful pollinate() call. Unused until Step 3
-## turns this into a seed.
+## Hybrid type resolved by a successful pollinate() call, held until it pops
+## as a seed.
 var hybrid_result: PlantData.PlantType = PlantData.PlantType.NONE
+
+## Progress through SEED_GROWING (0-100), mirroring how `growth` tracks
+## GROWING. Kept as a plain var rather than exported: no seedling instance
+## ever starts POLLINATED/SEED_GROWING, so there's nothing to author.
+var seed_progress: float = 0.0:
+	set(value):
+		seed_progress = clampf(value, 0.0, 100.0)
+		if state == State.POLLINATED and seed_progress > 0.0:
+			state = State.SEED_GROWING
+		elif state == State.SEED_GROWING and seed_progress >= 100.0:
+			_pop_seed()
+		else:
+			_update_visuals()
 
 var _shimmer_t: float = 0.0
 
@@ -45,6 +64,10 @@ var _shimmer_t: float = 0.0
 ## Seconds of continuous watering to grow from 0% to 100%.
 @export var grow_time: float = 5.0
 
+## Seconds of continuous watering for a POLLINATED plant to swell and pop a
+## seed.
+@export var seed_grow_time: float = 4.0
+
 @export var bloom_type: PlantData.PlantType = PlantData.PlantType.DAISY:
 	set(value):
 		bloom_type = value
@@ -54,6 +77,9 @@ var _shimmer_t: float = 0.0
 @onready var bloom: Node2D = $Bloom
 @onready var pollen_cue: Node2D = $Bloom/PollenCue
 @onready var sparkle: CPUParticles2D = $Bloom/Sparkle
+@onready var seed_pod: Polygon2D = $Bloom/SeedPod
+@onready var seed_pop_puff: CPUParticles2D = $SeedPopPuff
+@onready var seed_pop_sound: AudioStreamPlayer2D = $SeedPopSound
 @onready var _pollen_dots: Array[Polygon2D] = [
 	$Bloom/PollenCue/Dot1, $Bloom/PollenCue/Dot2, $Bloom/PollenCue/Dot3,
 ]
@@ -72,8 +98,14 @@ func _ready() -> void:
 	state = State.BLOOMED if growth >= 100.0 else State.GROWING
 
 
+## Same hover-and-drain mechanic as growing (see player.gd's watering poll) —
+## which progress bar a tick of watering advances depends on lifecycle state.
 func water(delta: float) -> void:
-	growth += 100.0 / grow_time * delta
+	match state:
+		State.GROWING:
+			growth += 100.0 / grow_time * delta
+		State.POLLINATED, State.SEED_GROWING:
+			seed_progress += 100.0 / seed_grow_time * delta
 
 
 ## Collects this plant's pollen. Only meaningful while BLOOMED — callers
@@ -94,6 +126,24 @@ func pollinate(incoming: PlantData.PlantType) -> PollinateResult:
 	hybrid_result = result
 	state = State.POLLINATED
 	return PollinateResult.SUCCESS
+
+
+## Finishes SEED_GROWING: fires the pop feedback, reverts to BLOOMED (seeds
+## are renewable, per REQUIREMENTS.md), and hands the popped type off via
+## seed_popped for whoever owns spawning seed.tscn into the level.
+func _pop_seed() -> void:
+	var popped_type: PlantData.PlantType = hybrid_result
+	seed_pop_puff.restart()
+	seed_pop_puff.emitting = true
+	seed_pop_sound.pitch_scale = randf_range(0.9, 1.1)
+	seed_pop_sound.play()
+	# Leave SEED_GROWING before clearing hybrid_result: _update_visuals()
+	# reads PlantData.seed_color(hybrid_result) whenever the pod is visible,
+	# and SEED_COLORS has no NONE entry.
+	state = State.BLOOMED
+	hybrid_result = PlantData.PlantType.NONE
+	seed_progress = 0.0
+	seed_popped.emit(popped_type, global_position)
 
 
 func _process(delta: float) -> void:
@@ -121,3 +171,7 @@ func _update_visuals() -> void:
 	if state != State.POLLINATED:
 		bloom.modulate = Color(1.0, 1.0, 1.0)
 		_shimmer_t = 0.0
+	seed_pod.visible = state == State.SEED_GROWING
+	if seed_pod.visible:
+		seed_pod.scale = Vector2.ONE * (seed_progress / 100.0)
+		seed_pod.color = PlantData.seed_color(hybrid_result)

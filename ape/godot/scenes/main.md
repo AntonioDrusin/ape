@@ -1,6 +1,6 @@
 # `main.tscn` — the level
 
-`Main` (`Node2D`), the game's entry point (`run/main_scene` in `project.godot`). Currently a single static level:
+`Main` (`Node2D`), the game's entry point (`run/main_scene` in `project.godot`), script: `scripts/main.gd`. Currently a single static level:
 
 - `Ground`, `Platform1`, `Platform2`, `Platform3` — instances of `platform.tscn`, positioned/scaled per-instance to build the level layout. No platform-specific script; layout is entirely position + scale data on the instance.
 - `Music` — `AudioStreamPlayer` playing `assets/audio/happy_bee.mp3` ("Happy Bee" by Kevin MacLeod, incompetech.com, CC BY 3.0 — attribution required if the game is published), looped, low volume (`volume_db = -20`), `autoplay = true`.
@@ -12,3 +12,5 @@
 - `HUD` — instance of `hud.tscn`, the on-screen water meter.
 
 There is no level-loading or scene-management system yet — `main.tscn` *is* the level. If a second level is added, this needs a level-container/loader layer before it grows further (see Coding conventions in CODING.md — don't build that abstraction until it's needed).
+
+`main.gd` (REQUIREMENTS.md Step 3) currently owns one responsibility: spawning. `_ready()` connects to `seed_popped` on every direct child that has it (each `Seedling`, found by checking `has_signal("seed_popped")` rather than hand-wiring each instance's signal in the `.tscn`, so seedlings added later are covered automatically). The handler instantiates `seed.tscn`, sets its `plant_type` to the popped hybrid, positions it a small fixed offset beside the plant, and adds it as a child of `Main`. Step 6 will extend this same script with goal tracking and the win overlay.

@@ -83,7 +83,7 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 **Testable:** collect pollen, see it on the bee, pollinate a second flower, see it change; `Q` sheds carried pollen.
 
-### Step 3 — Seed production
+### Step 3 — Seed production [COMPLETE]
 
 - A `POLLINATED` plant accepts watering again (same hover-and-drain mechanic as growing): a second full watering moves it through `SEED_GROWING` — visually, a seed pod swells at the flower center.
 - When complete, a **seed** (new scene) pops out with a small arc/bounce and comes to rest on the ground/platform beside the plant. The seed's look encodes its hybrid type (color/tiny icon).
