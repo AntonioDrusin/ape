@@ -28,6 +28,7 @@ var goal_types: Array[PlantData.PlantType] = []
 var goal_progress: Dictionary[PlantData.PlantType, bool] = {}
 
 @onready var intro_screen: CanvasLayer = $IntroScreen
+@onready var player: CharacterBody2D = $Player
 
 
 func _ready() -> void:
@@ -102,6 +103,7 @@ func _on_seedling_bloomed(bloom_type: PlantData.PlantType) -> void:
 		return
 	goal_progress[bloom_type] = true
 	goal_checked.emit(bloom_type)
+	player.celebrate_goal()
 	for done: bool in goal_progress.values():
 		if not done:
 			return

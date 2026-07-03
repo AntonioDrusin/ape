@@ -13,6 +13,8 @@
   - `SeedCarry` (`Polygon2D`, REQUIREMENTS.md Step 4) — the carried-seed cue, positioned beneath `Body` (mirrors with facing like `PollenBlob`). Hidden by default; `player.gd` toggles `visible` and sets `color` from `PlantData.seed_color()` whenever the carried seed changes.
     - `SeedPickupPuff` (`CPUParticles2D`, one-shot) — played by `player.gd` when a loose seed is picked up.
   - `SeedPickupSound` (`AudioStreamPlayer2D`) — one-shot SFX for seed pickup, pitch-varied like the pollen sounds. The planting sound (`assets/audio/seed_plant.wav`) lives on `plot.tscn` instead, since that feedback reads better coming from the dirt the seed lands in.
+  - `GoalCheckedSound` (`AudioStreamPlayer2D`) — one-shot chime played by `player.gd`'s `celebrate_goal()`, pitch-varied like the other feedback sounds.
+  - `GoalConfetti` (`Node2D`) — anchor for five one-shot `CPUParticles2D` bursts (`ConfettiRed`/`Yellow`/`Green`/`Blue`/`Pink`), one per color since `CPUParticles2D` has no per-particle random color; together they read as a big multi-colored confetti explosion. `player.gd`'s `celebrate_goal()` restarts and emits all five together. Called by `main.gd` whenever a goal plant (REQUIREMENTS.md Step 6) first reaches full bloom, distinct from the smaller single-color puffs elsewhere and from `win_overlay.tscn`'s own celebration on the final win.
   - `Wings` (`Node2D`), script: `scripts/wings.gd` — owns wing-flap animation, isolated from movement logic so flap speed/state can be driven by the player script (`wings.flapping`) without either script knowing the other's internals.
 - `Camera2D` — direct child of `Player`, sibling of `Visual`, so it never flips/rotates with the visual.
 

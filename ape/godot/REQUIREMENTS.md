@@ -121,9 +121,8 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 - Gnat swarms now also knock the carried **pollen** off the bee on touch (in addition to stealing water). The pollen is lost — puff particle + the existing steal sound. Carried seeds are safe (losing a seed would be too punishing).
 - Add 1–2 enemies patrolling near plot clusters so late-game carrying has tension.
-- Tune so this is pressure, not misery: brief invulnerability (~1.5 s) after being hit so a single swarm can't drain everything in one overlap.
 
-**Testable:** flying through a swarm while carrying pollen loses it; the game feels tenser but fair.
+**Testable:** flying through a swarm while carrying pollen loses it; 
 
 ### Step 8 — Fit-and-finish pass
 

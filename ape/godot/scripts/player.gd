@@ -25,6 +25,8 @@ signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 @onready var seed_carry: Polygon2D = $Visual/SeedCarry
 @onready var seed_pickup_sound: AudioStreamPlayer2D = $Visual/SeedPickupSound
 @onready var seed_pickup_puff: CPUParticles2D = $Visual/SeedCarry/SeedPickupPuff
+@onready var goal_checked_sound: AudioStreamPlayer2D = $Visual/GoalCheckedSound
+@onready var goal_confetti: Node2D = $Visual/GoalConfetti
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
@@ -194,6 +196,17 @@ func _set_seed(carrying: bool, type: PlantData.PlantType) -> void:
 	if has_seed:
 		seed_carry.color = PlantData.seed_color(seed_type)
 	seed_changed.emit(has_seed, seed_type)
+
+
+## Fired by Main when a goal plant reaches full bloom (Step 6): a big multi-
+## colored confetti burst from the bee plus a chime, distinct from the
+## smaller single-color puffs used for pollen/seed feedback elsewhere.
+func celebrate_goal() -> void:
+	for particles: CPUParticles2D in goal_confetti.get_children():
+		particles.restart()
+		particles.emitting = true
+	goal_checked_sound.pitch_scale = randf_range(0.95, 1.05)
+	goal_checked_sound.play()
 
 
 func steal_water(amount: float) -> void:
