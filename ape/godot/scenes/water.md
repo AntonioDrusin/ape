@@ -1,0 +1,3 @@
+# `water.tscn` — water
+
+`Water` (`Area2D`, group `water`), script: `scripts/water.gd`, with a `CollisionShape2D` (`RectangleShape2D`) and two `Polygon2D` children (`Visual` body, `Surface` highlight strip), mirroring `platform.tscn`'s structure but with an `Area2D` root instead of `StaticBody2D` — water doesn't block the player like solid ground. `water.gd` only exposes `get_surface_y()` (the world-space Y of the top of the collision shape, accounting for scale); it doesn't know about the player at all — the player is the one that queries overlapping water and decides how to react (see Movement model in ARCHITECTURE.md). Scaling the root resizes collision and visuals together, same convention as `platform.tscn`.

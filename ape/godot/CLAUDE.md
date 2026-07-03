@@ -6,7 +6,7 @@ A 2D Godot game (side-view, platformer-style) where the player controls a flying
 - Coding conventions and practices to follow when writing GDScript or scenes: see [CODING.md](CODING.md).
 - Planned gameplay features and the incremental build plan for them: see [REQUIREMENTS.md](REQUIREMENTS.md).
 
-Keep both documents in sync with the code: update ARCHITECTURE.md when scenes/systems are added, moved, or renamed.
+Keep both documents in sync with the code: update ARCHITECTURE.md when scenes/systems are added, moved, or renamed. Each scene's detailed node structure/behavior lives in a same-named `.md` file next to its `.tscn` in `scenes/` (e.g. `hud.tscn` / `hud.md`) — update that file too whenever the scene's nodes or behavior change, not just the short summary in ARCHITECTURE.md.
 
 ## Running the game
 

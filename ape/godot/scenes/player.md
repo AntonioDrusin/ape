@@ -1,0 +1,16 @@
+# `player.tscn` — the flying bug
+
+`Player` (`CharacterBody2D`), script: `scripts/player.gd`.
+
+- `CollisionShape2D` (`CircleShape2D`) — direct child of `Player`, sibling of `Visual`, so it is unaffected by visual flipping.
+- `WaterSensor` (`Area2D`) with its own `CollisionShape2D` (same `CircleShape2D` as the body) — direct child of `Player`, used to detect overlapping `water` and `seedling` group areas each physics frame via `get_overlapping_areas()`. Kept as a plain sensor (no signals) since the player only needs a per-frame snapshot, not enter/exit events.
+- `Visual` (`Node2D`) — groups everything that should mirror when the bug turns to face left/right (see `player.gd`'s facing logic). Contains the body/head/eye `Polygon2D`s and:
+  - `Proboscis` (`Polygon2D`) — hidden by default, shown by `player.gd` while the bug is resting on water and drinking, or watering a seedling. Since it's inside `Visual`, it mirrors with facing automatically, so the tip stays on the correct side of the bug.
+    - `WaterDrip` (`CPUParticles2D`) — positioned at the proboscis tip, `emitting` toggled by `player.gd` while watering a seedling. CPU (not GPU) particles to match the project's GL Compatibility renderer.
+  - `PollenBlob` (`Polygon2D`) — the bee-butt pollen cue (REQUIREMENTS.md Step 2), positioned on the rear of `Body`, opposite `Proboscis` so both read correctly regardless of facing since both live inside `Visual`. Hidden by default; `player.gd` toggles `visible` and sets `color` from `PlantData.pollen_color()` whenever carried pollen changes.
+    - `PollenPuff` (`CPUParticles2D`, one-shot) — played by `player.gd` on a fizzle or a `shed_pollen` drop.
+  - `PollenCollectSound`, `PollinateSound`, `PollenPuffSound` (`AudioStreamPlayer2D`) — one-shot SFX for pollen pickup, successful pollination, and fizzle/shed respectively, each with a small `pitch_scale` randomization per play (matches the fit-and-finish "vary pitch on repeated sounds" guidance). Streams are procedurally generated tones (see `CREDITS.md`), not sourced audio.
+  - `Wings` (`Node2D`), script: `scripts/wings.gd` — owns wing-flap animation, isolated from movement logic so flap speed/state can be driven by the player script (`wings.flapping`) without either script knowing the other's internals.
+- `Camera2D` — direct child of `Player`, sibling of `Visual`, so it never flips/rotates with the visual.
+
+See "Movement model" in ARCHITECTURE.md for how `player.gd` uses these pieces (thrust-based flight, water resting/drinking, watering, pollen).

@@ -1,0 +1,8 @@
+# `enemy.tscn` — bug swarm hazard
+
+`Enemy` (`Area2D`, group `enemy`), script: `scripts/enemy.gd`, with a `CollisionShape2D` (`CircleShape2D`) and a `Visual` (`Node2D`) containing several tiny dark `Polygon2D` specks clustered off-center to read as a cloud of gnats, plus a `StealSound` (`AudioStreamPlayer2D`) playing `assets/audio/water_steal.ogg` (Kenney "Interface Sounds", CC0, no attribution required).
+
+- Movement: unlike the player, the enemy isn't a `CharacterBody2D` — it just drifts. Each tick it eases (`move_toward`) toward `_target`, a random point within `wander_radius` of its spawn position (`_home`), picked in `_pick_new_target()` on a random timer (`retarget_min`-`retarget_max`) or on arrival. This is a leash around the spawn point, not free-roaming, so enemies placed near different platforms in `main.tscn` stay spread across the level instead of drifting into one cluster.
+- `Visual` continuously spins (`spin_speed`) independent of movement, giving the speck cluster a chaotic buzzing look without needing per-speck animation logic.
+- Touch detection: `Enemy` is `monitoring = true` / `monitorable = false` and connects its own `body_entered` signal — the player (`CharacterBody2D`) is a physics body Area2D can detect directly, so unlike the water/player-sensor pair (Area2D-vs-Area2D, needs polling) this is a one-shot signal.
+- Stealing: on `body_entered`, if the body exposes `steal_water()` (i.e. the player), the enemy calls it directly with `steal_amount` and plays `StealSound`. `player.gd` owns clamping `water_level` and emitting `water_level_changed` itself (mirrors how `water_level` filling works in reverse) — the enemy doesn't reach into the player's state.

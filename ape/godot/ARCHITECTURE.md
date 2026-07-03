@@ -4,76 +4,45 @@ Godot 4.7 project, GL Compatibility renderer. Engine version and renderer are pi
 
 ## Directory layout
 
-- `scenes/` — one `.tscn` per composable game object (player, platform, level). No loose top-level scenes outside this folder.
+- `scenes/` — one `.tscn` per composable game object (player, platform, level). No loose top-level scenes outside this folder. Each `.tscn` has a same-named `.md` file next to it (e.g. `hud.tscn` / `hud.md`) documenting its node structure and behavior in detail; ARCHITECTURE.md only holds a short summary + link. When a scene's nodes or behavior change, update its `.md` file (and the summary here if it's now stale) in the same change.
 - `scripts/` — one `.gd` per node that needs behavior, named after the node/scene it's attached to (`player.gd` on `Player`, not on some unrelated node).
 - `assets/` — non-script, non-scene resources, grouped by type (`assets/audio/`).
 
 ## Scene tree
 
-### `scenes/main.tscn` — the level
+Each scene has a short summary below; see its linked `.md` file (next to the `.tscn` in `scenes/`) for full node structure and behavior detail.
 
-`Main` (`Node2D`), the game's entry point (`run/main_scene` in `project.godot`). Currently a single static level:
+### [`scenes/main.tscn`](scenes/main.md) — the level
 
-- `Ground`, `Platform1`, `Platform2`, `Platform3` — instances of `platform.tscn`, positioned/scaled per-instance to build the level layout. No platform-specific script; layout is entirely position + scale data on the instance.
-- `Music` — `AudioStreamPlayer` playing `assets/audio/happy_bee.mp3` ("Happy Bee" by Kevin MacLeod, incompetech.com, CC BY 3.0 — attribution required if the game is published), looped, low volume (`volume_db = -20`), `autoplay = true`.
-- `Player` — instance of `player.tscn`.
-- `WaterPond`, `WaterPuddle` — instances of `water.tscn`, one at ground level and one on a ledge (`Platform2`), showing water can sit at the bottom or up on a platform. Every level is expected to have some water.
-- `Enemy1`-`Enemy5` — instances of `enemy.tscn`, positioned near different platform clusters so the wander leash (see below) keeps them spread across the level rather than bunched together.
-- `Seedling1`-`Seedling10` — instances of `seedling.tscn`, one or two per platform top, positioned to sit on each platform's top surface, each with a different `growth` value and `bloom_type` so the level shows the full range from barely-sprouted to fully bloomed.
-- `BoundsTop`, `BoundsBottom`, `BoundsLeft`, `BoundsRight` — instances of `wall.tscn`, forming a box around the whole level so the player can't fly off-screen. Left/right instances are rotated 90° and scaled along the (now vertical) local x-axis to span the box's height.
-- `HUD` — instance of `hud.tscn`, the on-screen water meter.
+`Main` (`Node2D`), the game's entry point. Composes instances of all other scenes (platforms, walls, player, water, enemies, seedlings, HUD) into the single static level that currently exists — there is no level-loading/scene-management system yet.
 
-There is no level-loading or scene-management system yet — `main.tscn` *is* the level. If a second level is added, this needs a level-container/loader layer before it grows further (see Coding conventions in CODING.md — don't build that abstraction until it's needed).
+### [`scenes/platform.tscn`](scenes/platform.md) — static level geometry
 
-### `scenes/platform.tscn` — static level geometry
+`Platform` (`StaticBody2D`), no script. Scriptless collision + visual rectangle, resized by scaling the root.
 
-`Platform` (`StaticBody2D`) with a `CollisionShape2D` (`RectangleShape2D`) and two `Polygon2D` children (`Visual` body, `Top` accent strip) for rendering. No script. Scaling the root node scales collision and visuals together — this is the supported way to resize a platform instance, not editing the shape resource per-instance.
+### [`scenes/wall.tscn`](scenes/wall.md) — level boundary
 
-### `scenes/wall.tscn` — level boundary
+`Wall` (`StaticBody2D`), no script. Same structure as `platform.tscn` but styled as a boundary, used to box in the level.
 
-`Wall` (`StaticBody2D`) with a `CollisionShape2D` (`RectangleShape2D`) and a single `Polygon2D` (`Visual`), same base size as `platform.tscn` but a flat stone color and no grass `Top` strip — unlike ground, a boundary wall is seen edge-on and rotated, so a grass accent wouldn't read correctly. Same scale-to-resize convention as `platform.tscn`.
+### [`scenes/water.tscn`](scenes/water.md) — water
 
-### `scenes/water.tscn` — water
+`Water` (`Area2D`, group `water`), script: `scripts/water.gd`. A non-blocking area the player detects and rests on; exposes `get_surface_y()` only, knows nothing about the player.
 
-`Water` (`Area2D`, group `water`), script: `scripts/water.gd`, with a `CollisionShape2D` (`RectangleShape2D`) and two `Polygon2D` children (`Visual` body, `Surface` highlight strip), mirroring `platform.tscn`'s structure but with an `Area2D` root instead of `StaticBody2D` — water doesn't block the player like solid ground. `water.gd` only exposes `get_surface_y()` (the world-space Y of the top of the collision shape, accounting for scale); it doesn't know about the player at all — the player is the one that queries overlapping water and decides how to react (see Movement model below). Scaling the root resizes collision and visuals together, same convention as `platform.tscn`.
+### [`scenes/player.tscn`](scenes/player.md) — the flying bug
 
-### `scenes/player.tscn` — the flying bug
+`Player` (`CharacterBody2D`), script: `scripts/player.gd`. The controllable bug — thrust-based flight, water sensing, pollen carrying/visuals, wing animation. See "Movement model" below for behavior.
 
-`Player` (`CharacterBody2D`), script: `scripts/player.gd`.
+### [`scenes/enemy.tscn`](scenes/enemy.md) — bug swarm hazard
 
-- `CollisionShape2D` (`CircleShape2D`) — direct child of `Player`, sibling of `Visual`, so it is unaffected by visual flipping.
-- `WaterSensor` (`Area2D`) with its own `CollisionShape2D` (same `CircleShape2D` as the body) — direct child of `Player`, used to detect overlapping `water` and `seedling` group areas each physics frame via `get_overlapping_areas()`. Kept as a plain sensor (no signals) since the player only needs a per-frame snapshot, not enter/exit events.
-- `Visual` (`Node2D`) — groups everything that should mirror when the bug turns to face left/right (see `player.gd`'s facing logic). Contains the body/head/eye `Polygon2D`s and:
-  - `Proboscis` (`Polygon2D`) — hidden by default, shown by `player.gd` while the bug is resting on water and drinking, or watering a seedling. Since it's inside `Visual`, it mirrors with facing automatically, so the tip stays on the correct side of the bug.
-    - `WaterDrip` (`CPUParticles2D`) — positioned at the proboscis tip, `emitting` toggled by `player.gd` while watering a seedling. CPU (not GPU) particles to match the project's GL Compatibility renderer.
-  - `PollenBlob` (`Polygon2D`) — the bee-butt pollen cue (REQUIREMENTS.md Step 2), positioned on the rear of `Body`, opposite `Proboscis` so both read correctly regardless of facing since both live inside `Visual`. Hidden by default; `player.gd` toggles `visible` and sets `color` from `PlantData.pollen_color()` whenever carried pollen changes.
-    - `PollenPuff` (`CPUParticles2D`, one-shot) — played by `player.gd` on a fizzle or a `shed_pollen` drop.
-  - `PollenCollectSound`, `PollinateSound`, `PollenPuffSound` (`AudioStreamPlayer2D`) — one-shot SFX for pollen pickup, successful pollination, and fizzle/shed respectively, each with a small `pitch_scale` randomization per play (matches the fit-and-finish "vary pitch on repeated sounds" guidance). Streams are procedurally generated tones (see `CREDITS.md`), not sourced audio.
-  - `Wings` (`Node2D`), script: `scripts/wings.gd` — owns wing-flap animation, isolated from movement logic so flap speed/state can be driven by the player script (`wings.flapping`) without either script knowing the other's internals.
-- `Camera2D` — direct child of `Player`, sibling of `Visual`, so it never flips/rotates with the visual.
+`Enemy` (`Area2D`, group `enemy`), script: `scripts/enemy.gd`. Drifts within a leash radius of its spawn point and steals water from the player on touch.
 
-### `scenes/enemy.tscn` — bug swarm hazard
+### [`scenes/seedling.tscn`](scenes/seedling.md) — growing plant
 
-`Enemy` (`Area2D`, group `enemy`), script: `scripts/enemy.gd`, with a `CollisionShape2D` (`CircleShape2D`) and a `Visual` (`Node2D`) containing several tiny dark `Polygon2D` specks clustered off-center to read as a cloud of gnats, plus a `StealSound` (`AudioStreamPlayer2D`) playing `assets/audio/water_steal.ogg` (Kenney "Interface Sounds", CC0, no attribution required).
+`Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`). A plant lifecycle state machine (`GROWING → BLOOMED → POLLINATED → SEED_GROWING → ...`) driven by `growth` and watered/pollinated by the player.
 
-- Movement: unlike the player, the enemy isn't a `CharacterBody2D` — it just drifts. Each tick it eases (`move_toward`) toward `_target`, a random point within `wander_radius` of its spawn position (`_home`), picked in `_pick_new_target()` on a random timer (`retarget_min`-`retarget_max`) or on arrival. This is a leash around the spawn point, not free-roaming, so enemies placed near different platforms in `main.tscn` stay spread across the level instead of drifting into one cluster.
-- `Visual` continuously spins (`spin_speed`) independent of movement, giving the speck cluster a chaotic buzzing look without needing per-speck animation logic.
-- Touch detection: `Enemy` is `monitoring = true` / `monitorable = false` and connects its own `body_entered` signal — the player (`CharacterBody2D`) is a physics body Area2D can detect directly, so unlike the water/player-sensor pair (Area2D-vs-Area2D, needs polling) this is a one-shot signal.
-- Stealing: on `body_entered`, if the body exposes `steal_water()` (i.e. the player), the enemy calls it directly with `steal_amount` and plays `StealSound`. `player.gd` owns clamping `water_level` and emitting `water_level_changed` itself (mirrors how `water_level` filling works in reverse) — the enemy doesn't reach into the player's state.
+### [`scenes/hud.tscn`](scenes/hud.md) — water meter
 
-### `scenes/seedling.tscn` — growing plant
-
-`Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`, so growth/bloom edits preview live in the editor). Three children:
-
-- `HoverZone` — `Area2D` (group `seedling`, `monitorable = true`, `monitoring = false` — it only needs to be detected, not detect anything itself) with a `CollisionShape2D` (`CircleShape2D`), positioned over the plant. This is what the player's `WaterSensor` polls to know it's hovering over this seedling (see Movement model below); `seedling.gd` itself never touches this node, it just sits in the tree as a detectable proxy for "over this plant."
-- `Sprout` — the small stem/leaves/bud (`Polygon2D`s) always present, scaled down at low growth.
-- `Bloom` — one `Node2D` per `PlantData.PlantType` variant (`Daisy`, `Tulip`, `Berry`, `Apple`, `Sunflower`), each a distinct colorful flower/fruit shape built from a few `Polygon2D`s. Only the node matching the exported `bloom_type` is visible. Its last child, `PollenCue`, is three small diamond `Polygon2D` dots at the flower center, each paired with a slightly larger white `Polygon2D` sibling drawn just before it (`DotNBorder`) so the grain reads with a white outline against any bloom color; `seedling.gd` sets the `Dot1`-`Dot3` `color` directly to the plant's pollen color from `PlantData` (the borders stay plain white, which is why the color is set per-dot in script rather than via `PollenCue.modulate` — modulate would tint the borders too). Visible only in the `BLOOMED` state to signal collectible pollen.
-
-The plant is an explicit lifecycle state machine (`State` enum): `GROWING → BLOOMED → POLLINATED → SEED_GROWING → (seed pops) → BLOOMED`. `state` is a plain (non-exported) var derived at `_ready` from `growth`; `SEED_GROWING` exists in the enum but is not yet reachable (seed production is a later REQUIREMENTS.md step). Every visual is a function of `(state, progress, bloom_type)` in `_update_visuals()` — no visual state lives anywhere else.
-
-`POLLINATED` (REQUIREMENTS.md Step 2) is reached via `pollinate(incoming: PlantData.PlantType) -> PollinateResult`, called by `player.gd` when the bee hovers a `BLOOMED` flower while carrying different-colored pollen. It resolves `PlantData.combo_result()` and either stores the hybrid on `hybrid_result` and advances state (`SUCCESS`), or leaves state untouched (`FIZZLE`) — the fizzle puff itself plays on the *player*, since it's the carried pollen that's consumed, not the flower. `collect_pollen()` is the mirror read for pickup: valid only while `BLOOMED`, returns `bloom_type` without mutating the plant (pollen isn't depleted by collecting it; only pollination advances state). `_update_visuals()`'s `POLLINATED` branch shows a `Sparkle` (`CPUParticles2D`) and a sine-driven `bloom.modulate` shimmer; the shimmer is driven by `_process()`, which the `state` setter enables/disables via `set_process()` — gated off whenever `Engine.is_editor_hint()` is true, so the `@tool` preview stays static like `growth`/`bloom_type` already are, instead of animating inside the editor.
-
-`growth` (`@export_range(0, 100)`) is the `GROWING` state's progress. It drives the whole plant's `scale` (`lerp(0.12, 1.0, growth / 100)` — barely visible near 0, full size at 100) and, once `growth` passes `BLOOM_START` (70), fades `Bloom` in and scales it from 0 to full over the remaining range while hiding `Sprout/Bud` (the bloom replaces the bud, it doesn't sit alongside it). Reaching 100 flips `state` to `BLOOMED` (the setter keeps this in sync both directions so the editor preview works). `bloom_type` (`@export`, typed `PlantData.PlantType`) picks which flower/fruit variant shows — instances in `main.tscn` each set both to different values so the level shows a range of growth stages and a different bloom per seedling. `water(delta)` raises `growth` at a fixed rate (`100 / grow_time`, default 5s for 0%→100%) — called by `player.gd` each physics tick the bug hovers over `HoverZone` (see Movement model below).
+`HUD` (`CanvasLayer`), script: `scripts/hud.gd`. On-screen water meter that listens to the player's `water_level_changed` signal.
 
 ### `scripts/plant_data.gd` — plant data table
 
@@ -86,6 +55,8 @@ The plant is an explicit lifecycle state machine (`State` enum): `GROWING → BL
 ### `scenes/hud.tscn` — water meter
 
 `HUD` (`CanvasLayer`), script: `scripts/hud.gd`, with a `Control` anchored top-left containing a `ProgressBar` (`WaterMeter`, range 0-1). `hud.gd` finds the player via the `player` group in `_ready()` and connects to its `water_level_changed` signal — the HUD reaches out to the player rather than the player knowing about the HUD, so `player.gd` stays UI-agnostic.
+
+`WaterMeter` is themed blue (`StyleBoxFlat` overrides on `background`/`fill`) with a `ShaderMaterial` (`assets/shaders/water_meter.gdshader`) giving both bars a rippling top edge (vertex displacement) and a shimmering brightness pulse (fragment) — purely cosmetic, doesn't touch `value`. `clip_contents = true` on `WaterMeter` keeps its `Bubbles` child (`CPUParticles2D`, rectangle emission spanning the bar) contained to the bar's rect as small bubbles drift upward and fade, matching the CPUParticles2D convention used elsewhere (`WaterDrip`, `PollenPuff`).
 
 ## Movement model
 
