@@ -35,6 +35,9 @@ jobs:
           mkdir -v -p build/web
           godot --headless --verbose --export-release "Web"
 
+      - name: Add cross-origin isolation service worker
+        run: cp -v web/coi-serviceworker.js build/web/coi-serviceworker.js
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ape/godot/build/web
