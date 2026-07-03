@@ -99,7 +99,7 @@ growth = 45.0
 bloom_type = 2
 
 [node name="Seedling4" parent="." unique_id=1102010483 instance=ExtResource("8")]
-position = Vector2(300, 144)
+position = Vector2(790, -216)
 scale = Vector2(0.868, 0.868)
 growth = 85.0
 bloom_type = 3
@@ -172,6 +172,9 @@ scale = Vector2(0.6, 0.5)
 position = Vector2(401, -80)
 scale = Vector2(0.36, 0.25)
 
+[node name="Platform10" parent="." unique_id=1988330635 instance=ExtResource("1")]
+position = Vector2(750, -200)
+
 [node name="Plot1" parent="." instance=ExtResource("11")]
 position = Vector2(-100, 396)
 
@@ -185,7 +188,7 @@ position = Vector2(650, 396)
 position = Vector2(-80, 244)
 
 [node name="Plot5" parent="." instance=ExtResource("11")]
-position = Vector2(220, 144)
+position = Vector2(710, -216)
 
 [node name="Plot6" parent="." instance=ExtResource("11")]
 position = Vector2(560, 44)
