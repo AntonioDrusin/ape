@@ -18,6 +18,8 @@ Godot 4.7 project, GL Compatibility renderer. Engine version and renderer are pi
 - `Music` — `AudioStreamPlayer` playing `assets/audio/happy_bee.mp3` ("Happy Bee" by Kevin MacLeod, incompetech.com, CC BY 3.0 — attribution required if the game is published), looped, low volume (`volume_db = -20`), `autoplay = true`.
 - `Player` — instance of `player.tscn`.
 - `WaterPond`, `WaterPuddle` — instances of `water.tscn`, one at ground level and one on a ledge (`Platform2`), showing water can sit at the bottom or up on a platform. Every level is expected to have some water.
+- `Enemy1`-`Enemy5` — instances of `enemy.tscn`, positioned near different platform clusters so the wander leash (see below) keeps them spread across the level rather than bunched together.
+- `Seedling1`-`Seedling10` — instances of `seedling.tscn`, one or two per platform top, positioned to sit on each platform's top surface, each with a different `growth` value and `bloom_type` so the level shows the full range from barely-sprouted to fully bloomed.
 - `BoundsTop`, `BoundsBottom`, `BoundsLeft`, `BoundsRight` — instances of `wall.tscn`, forming a box around the whole level so the player can't fly off-screen. Left/right instances are rotated 90° and scaled along the (now vertical) local x-axis to span the box's height.
 - `HUD` — instance of `hud.tscn`, the on-screen water meter.
 
@@ -42,9 +44,29 @@ There is no level-loading or scene-management system yet — `main.tscn` *is* th
 - `CollisionShape2D` (`CircleShape2D`) — direct child of `Player`, sibling of `Visual`, so it is unaffected by visual flipping.
 - `WaterSensor` (`Area2D`) with its own `CollisionShape2D` (same `CircleShape2D` as the body) — direct child of `Player`, used to detect overlapping `water` group areas each physics frame via `get_overlapping_areas()`. Kept as a plain sensor (no signals) since the player only needs a per-frame snapshot, not enter/exit events.
 - `Visual` (`Node2D`) — groups everything that should mirror when the bug turns to face left/right (see `player.gd`'s facing logic). Contains the body/head/eye `Polygon2D`s and:
-  - `Proboscis` (`Polygon2D`) — hidden by default, shown by `player.gd` while the bug is resting on water and drinking.
+  - `Proboscis` (`Polygon2D`) — hidden by default, shown by `player.gd` while the bug is resting on water and drinking, or watering a seedling. Since it's inside `Visual`, it mirrors with facing automatically, so the tip stays on the correct side of the bug.
+    - `WaterDrip` (`CPUParticles2D`) — positioned at the proboscis tip, `emitting` toggled by `player.gd` while watering a seedling. CPU (not GPU) particles to match the project's GL Compatibility renderer.
   - `Wings` (`Node2D`), script: `scripts/wings.gd` — owns wing-flap animation, isolated from movement logic so flap speed/state can be driven by the player script (`wings.flapping`) without either script knowing the other's internals.
 - `Camera2D` — direct child of `Player`, sibling of `Visual`, so it never flips/rotates with the visual.
+
+### `scenes/enemy.tscn` — bug swarm hazard
+
+`Enemy` (`Area2D`, group `enemy`), script: `scripts/enemy.gd`, with a `CollisionShape2D` (`CircleShape2D`) and a `Visual` (`Node2D`) containing several tiny dark `Polygon2D` specks clustered off-center to read as a cloud of gnats, plus a `StealSound` (`AudioStreamPlayer2D`) playing `assets/audio/water_steal.ogg` (Kenney "Interface Sounds", CC0, no attribution required).
+
+- Movement: unlike the player, the enemy isn't a `CharacterBody2D` — it just drifts. Each tick it eases (`move_toward`) toward `_target`, a random point within `wander_radius` of its spawn position (`_home`), picked in `_pick_new_target()` on a random timer (`retarget_min`-`retarget_max`) or on arrival. This is a leash around the spawn point, not free-roaming, so enemies placed near different platforms in `main.tscn` stay spread across the level instead of drifting into one cluster.
+- `Visual` continuously spins (`spin_speed`) independent of movement, giving the speck cluster a chaotic buzzing look without needing per-speck animation logic.
+- Touch detection: `Enemy` is `monitoring = true` / `monitorable = false` and connects its own `body_entered` signal — the player (`CharacterBody2D`) is a physics body Area2D can detect directly, so unlike the water/player-sensor pair (Area2D-vs-Area2D, needs polling) this is a one-shot signal.
+- Stealing: on `body_entered`, if the body exposes `steal_water()` (i.e. the player), the enemy calls it directly with `steal_amount` and plays `StealSound`. `player.gd` owns clamping `water_level` and emitting `water_level_changed` itself (mirrors how `water_level` filling works in reverse) — the enemy doesn't reach into the player's state.
+
+### `scenes/seedling.tscn` — growing plant decoration
+
+`Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`, so growth/bloom edits preview live in the editor). Three children:
+
+- `HoverZone` — `Area2D` (group `seedling`, `monitorable = true`, `monitoring = false` — it only needs to be detected, not detect anything itself) with a `CollisionShape2D` (`CircleShape2D`), positioned over the plant. This is what the player's `WaterSensor` polls to know it's hovering over this seedling (see Movement model below); `seedling.gd` itself never touches this node, it just sits in the tree as a detectable proxy for "over this plant."
+- `Sprout` — the small stem/leaves/bud (`Polygon2D`s) always present, scaled down at low growth.
+- `Bloom` — one `Node2D` per `BloomType` variant (`Daisy`, `Tulip`, `Berry`, `Apple`, `Sunflower`), each a distinct colorful flower/fruit shape built from a few `Polygon2D`s. Only the node matching the exported `bloom_type` is visible.
+
+`growth` (`@export_range(0, 100)`) drives the whole plant's `scale` (`lerp(0.12, 1.0, growth / 100)` — barely visible near 0, full size at 100) and, once `growth` passes `BLOOM_START` (70), fades `Bloom` in and scales it from 0 to full over the remaining range while hiding `Sprout/Bud` (the bloom replaces the bud, it doesn't sit alongside it). `bloom_type` (`@export`) picks which flower/fruit variant shows — instances in `main.tscn` each set both to different values so the level shows a range of growth stages and a different bloom per seedling. `water(delta)` raises `growth` at a fixed rate (`100 / grow_time`, default 5s for 0%→100%) — called by `player.gd` each physics tick the bug hovers over `HoverZone` (see Movement model below).
 
 ### `scenes/hud.tscn` — water meter
 
@@ -61,11 +83,12 @@ There is no level-loading or scene-management system yet — `main.tscn` *is* th
 - `wings.flapping` is set from input/airborne state each tick; `wings.gd` owns the actual flap animation (sine oscillation, two speeds for idle vs. active).
 - Water resting: since `water.tscn`'s `Area2D` doesn't block movement like a floor, `player.gd` emulates landing on it each physics tick — while falling or still (`velocity.y >= 0`) and overlapping a `water` group area (via `WaterSensor`), once the bug's Y reaches the water's `get_surface_y()`, its position is pinned there and `velocity.y` zeroed, the same way `is_on_floor()` would behave on solid ground. Thrusting upward lifts it back off on the next tick.
 - Drinking: while resting on water (see above) with no active movement input, the bug is "landed on water" and drinks — `Proboscis` becomes visible and `water_level` fills from 0 to 1 over `water_fill_time` (4s), emitting `water_level_changed` for `hud.gd` to display.
+- Water theft: `player.gd` exposes `steal_water(amount)`, called by `enemy.gd` on touch (see `scenes/enemy.tscn` above) — clamps `water_level` down and re-emits `water_level_changed` the same way drinking does, so the HUD reacts identically regardless of which direction the level moved.
+- Watering: each physics tick, if `water_level > 0`, `player.gd` checks `WaterSensor`'s overlapping areas (same poll used for water landing, just filtered to the `seedling` group instead of `water`) for a `HoverZone`. If found, it calls `water(delta)` on the zone's parent `Seedling` (see `scenes/seedling.tscn` above), draining `water_level` from 1 to 0 over `water_drain_time` (2s) the same way drinking fills it, and re-emitting `water_level_changed`. `Proboscis` and `WaterDrip` both reflect this state so the drip is visibly the source of the growth.
 
 ## Known gaps / not yet built
 
-- No level-transition, scoring, win/lose, or win condition tied to a full water meter — drinking fills `water_level` but nothing consumes it yet.
-- No enemies or hazards.
+- No level-transition, scoring, win/lose, or win condition tied to a full water meter — drinking and watering seedlings both move `water_level` but nothing else consumes it, and there's no win condition for growing all seedlings to full bloom.
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.
 

@@ -1,0 +1,123 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/seedling.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hover"]
+radius = 24.0
+
+[node name="Seedling" type="Node2D"]
+script = ExtResource("1")
+
+[node name="HoverZone" type="Area2D" parent="." groups=["seedling"]]
+position = Vector2(0, -12)
+monitorable = true
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HoverZone"]
+shape = SubResource("CircleShape2D_hover")
+
+[node name="Sprout" type="Node2D" parent="."]
+
+[node name="Stem" type="Polygon2D" parent="Sprout"]
+color = Color(0.18, 0.42, 0.12, 1)
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, -11, -1, -11)
+
+[node name="LeafLeft" type="Polygon2D" parent="Sprout"]
+color = Color(0.3, 0.62, 0.22, 1)
+polygon = PackedVector2Array(0, -5, -8, -9, -5, -11, 0, -8)
+
+[node name="LeafRight" type="Polygon2D" parent="Sprout"]
+color = Color(0.26, 0.56, 0.2, 1)
+polygon = PackedVector2Array(0, -8, 6, -11, 8, -8, 0, -5)
+
+[node name="Bud" type="Polygon2D" parent="Sprout"]
+color = Color(0.58, 0.78, 0.28, 1)
+polygon = PackedVector2Array(0, -14, 2, -11, 0, -8, -2, -11)
+
+[node name="Bloom" type="Node2D" parent="."]
+
+[node name="Daisy" type="Node2D" parent="Bloom"]
+
+[node name="PetalN" type="Polygon2D" parent="Bloom/Daisy"]
+color = Color(1, 1, 1, 0.95)
+polygon = PackedVector2Array(-2, -19, 2, -19, 2, -15, -2, -15)
+
+[node name="PetalS" type="Polygon2D" parent="Bloom/Daisy"]
+color = Color(1, 1, 1, 0.95)
+polygon = PackedVector2Array(-2, -15, 2, -15, 2, -11, -2, -11)
+
+[node name="PetalE" type="Polygon2D" parent="Bloom/Daisy"]
+color = Color(1, 1, 1, 0.95)
+polygon = PackedVector2Array(11, -17, 15, -17, 15, -13, 11, -13)
+
+[node name="PetalW" type="Polygon2D" parent="Bloom/Daisy"]
+color = Color(1, 1, 1, 0.95)
+polygon = PackedVector2Array(-15, -17, -11, -17, -11, -13, -15, -13)
+
+[node name="Center" type="Polygon2D" parent="Bloom/Daisy"]
+color = Color(0.95, 0.8, 0.15, 1)
+polygon = PackedVector2Array(-1.5, -16.5, 1.5, -16.5, 1.5, -13.5, -1.5, -13.5)
+
+[node name="Tulip" type="Node2D" parent="Bloom"]
+
+[node name="Crown" type="Polygon2D" parent="Bloom/Tulip"]
+color = Color(0.55, 0.15, 0.55, 1)
+polygon = PackedVector2Array(-4, -11, -4, -18, -1, -15, 0, -19, 1, -15, 4, -18, 4, -11)
+
+[node name="Berry" type="Node2D" parent="Bloom"]
+
+[node name="Berry1" type="Polygon2D" parent="Bloom/Berry"]
+color = Color(0.75, 0.1, 0.15, 1)
+polygon = PackedVector2Array(-3, -15, -6, -18, -3, -21, 0, -18)
+
+[node name="Berry2" type="Polygon2D" parent="Bloom/Berry"]
+color = Color(0.68, 0.08, 0.4, 1)
+polygon = PackedVector2Array(3, -13, 0, -16, 3, -19, 6, -16)
+
+[node name="Berry3" type="Polygon2D" parent="Bloom/Berry"]
+color = Color(0.75, 0.1, 0.15, 1)
+polygon = PackedVector2Array(0, -19, -3, -22, 0, -25, 3, -22)
+
+[node name="Apple" type="Node2D" parent="Bloom"]
+
+[node name="Body" type="Polygon2D" parent="Bloom/Apple"]
+color = Color(0.8, 0.15, 0.1, 1)
+polygon = PackedVector2Array(0, -11, -5, -14, -5, -19, 0, -22, 5, -19, 5, -14)
+
+[node name="Stem2" type="Polygon2D" parent="Bloom/Apple"]
+color = Color(0.35, 0.22, 0.1, 1)
+polygon = PackedVector2Array(-0.5, -24, 0.5, -24, 0.5, -22, -0.5, -22)
+
+[node name="Leaf" type="Polygon2D" parent="Bloom/Apple"]
+color = Color(0.3, 0.6, 0.2, 1)
+polygon = PackedVector2Array(0.5, -24, 4, -25, 4, -22, 0.5, -22)
+
+[node name="Sunflower" type="Node2D" parent="Bloom"]
+
+[node name="Petal1" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(0, -22, 3, -18, 0, -16, -3, -18)
+
+[node name="Petal2" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(6, -20, 6, -16, 2, -16, 4, -18)
+
+[node name="Petal3" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(6, -14, 3, -11, 1, -14, 4, -16)
+
+[node name="Petal4" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(0, -12, -3, -16, 0, -18, 3, -16)
+
+[node name="Petal5" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(-6, -14, -6, -18, -2, -18, -4, -16)
+
+[node name="Petal6" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.95, 0.7, 0.1, 1)
+polygon = PackedVector2Array(-6, -20, -3, -23, -1, -20, -4, -18)
+
+[node name="Center" type="Polygon2D" parent="Bloom/Sunflower"]
+color = Color(0.35, 0.22, 0.1, 1)
+polygon = PackedVector2Array(-2.5, -20.5, 2.5, -20.5, 2.5, -15.5, -2.5, -15.5)

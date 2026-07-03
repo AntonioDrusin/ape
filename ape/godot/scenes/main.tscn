@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/wall.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="5"]
 [ext_resource type="AudioStream" uid="uid://bwbe83n6rs56a" path="res://assets/audio/happy_bee.mp3" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/seedling.tscn" id="8"]
 
 [node name="Main" type="Node2D"]
 
@@ -62,6 +64,71 @@ scale = Vector2(3, 1)
 [node name="WaterPuddle" parent="." instance=ExtResource("3")]
 position = Vector2(260, 152)
 scale = Vector2(0.6, 0.5)
+
+[node name="Enemy1" parent="." instance=ExtResource("7")]
+position = Vector2(-150, 180)
+
+[node name="Enemy2" parent="." instance=ExtResource("7")]
+position = Vector2(300, 100)
+
+[node name="Enemy3" parent="." instance=ExtResource("7")]
+position = Vector2(650, -30)
+
+[node name="Enemy4" parent="." instance=ExtResource("7")]
+position = Vector2(900, 300)
+
+[node name="Enemy5" parent="." instance=ExtResource("7")]
+position = Vector2(-300, 300)
+
+[node name="Seedling1" parent="." instance=ExtResource("8")]
+position = Vector2(120, 396)
+growth = 15.0
+bloom_type = 0
+
+[node name="Seedling2" parent="." instance=ExtResource("8")]
+position = Vector2(430, 396)
+growth = 100.0
+bloom_type = 1
+
+[node name="Seedling3" parent="." instance=ExtResource("8")]
+position = Vector2(-190, 244)
+growth = 45.0
+bloom_type = 2
+
+[node name="Seedling4" parent="." instance=ExtResource("8")]
+position = Vector2(300, 144)
+growth = 85.0
+bloom_type = 3
+
+[node name="Seedling5" parent="." instance=ExtResource("8")]
+position = Vector2(660, 44)
+growth = 60.0
+bloom_type = 4
+
+[node name="Seedling6" parent="." instance=ExtResource("8")]
+position = Vector2(-370, 124)
+growth = 25.0
+bloom_type = 1
+
+[node name="Seedling7" parent="." instance=ExtResource("8")]
+position = Vector2(85, 204)
+growth = 100.0
+bloom_type = 2
+
+[node name="Seedling8" parent="." instance=ExtResource("8")]
+position = Vector2(530, 324)
+growth = 50.0
+bloom_type = 3
+
+[node name="Seedling9" parent="." instance=ExtResource("8")]
+position = Vector2(900, -76)
+growth = 90.0
+bloom_type = 0
+
+[node name="Seedling10" parent="." instance=ExtResource("8")]
+position = Vector2(1010, 244)
+growth = 35.0
+bloom_type = 4
 
 [node name="BoundsTop" parent="." instance=ExtResource("4")]
 position = Vector2(400, -320)
