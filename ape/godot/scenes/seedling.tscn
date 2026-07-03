@@ -121,3 +121,14 @@ polygon = PackedVector2Array(-6, -20, -3, -23, -1, -20, -4, -18)
 [node name="Center" type="Polygon2D" parent="Bloom/Sunflower"]
 color = Color(0.35, 0.22, 0.1, 1)
 polygon = PackedVector2Array(-2.5, -20.5, 2.5, -20.5, 2.5, -15.5, -2.5, -15.5)
+
+[node name="PollenCue" type="Node2D" parent="Bloom"]
+
+[node name="Dot1" type="Polygon2D" parent="Bloom/PollenCue"]
+polygon = PackedVector2Array(0, -19.5, 1.8, -17.7, 0, -15.9, -1.8, -17.7)
+
+[node name="Dot2" type="Polygon2D" parent="Bloom/PollenCue"]
+polygon = PackedVector2Array(-4, -16.4, -2.4, -14.8, -4, -13.2, -5.6, -14.8)
+
+[node name="Dot3" type="Polygon2D" parent="Bloom/PollenCue"]
+polygon = PackedVector2Array(4.2, -18.3, 5.6, -16.9, 4.2, -15.5, 2.8, -16.9)

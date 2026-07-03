@@ -58,15 +58,21 @@ There is no level-loading or scene-management system yet — `main.tscn` *is* th
 - Touch detection: `Enemy` is `monitoring = true` / `monitorable = false` and connects its own `body_entered` signal — the player (`CharacterBody2D`) is a physics body Area2D can detect directly, so unlike the water/player-sensor pair (Area2D-vs-Area2D, needs polling) this is a one-shot signal.
 - Stealing: on `body_entered`, if the body exposes `steal_water()` (i.e. the player), the enemy calls it directly with `steal_amount` and plays `StealSound`. `player.gd` owns clamping `water_level` and emitting `water_level_changed` itself (mirrors how `water_level` filling works in reverse) — the enemy doesn't reach into the player's state.
 
-### `scenes/seedling.tscn` — growing plant decoration
+### `scenes/seedling.tscn` — growing plant
 
 `Seedling` (`Node2D`), script: `scripts/seedling.gd` (`@tool`, so growth/bloom edits preview live in the editor). Three children:
 
 - `HoverZone` — `Area2D` (group `seedling`, `monitorable = true`, `monitoring = false` — it only needs to be detected, not detect anything itself) with a `CollisionShape2D` (`CircleShape2D`), positioned over the plant. This is what the player's `WaterSensor` polls to know it's hovering over this seedling (see Movement model below); `seedling.gd` itself never touches this node, it just sits in the tree as a detectable proxy for "over this plant."
 - `Sprout` — the small stem/leaves/bud (`Polygon2D`s) always present, scaled down at low growth.
-- `Bloom` — one `Node2D` per `BloomType` variant (`Daisy`, `Tulip`, `Berry`, `Apple`, `Sunflower`), each a distinct colorful flower/fruit shape built from a few `Polygon2D`s. Only the node matching the exported `bloom_type` is visible.
+- `Bloom` — one `Node2D` per `PlantData.PlantType` variant (`Daisy`, `Tulip`, `Berry`, `Apple`, `Sunflower`), each a distinct colorful flower/fruit shape built from a few `Polygon2D`s. Only the node matching the exported `bloom_type` is visible. Its last child, `PollenCue`, is three small white diamond `Polygon2D` dots at the flower center, tinted via `modulate` with the plant's pollen color from `PlantData` — visible only in the `BLOOMED` state to signal collectible pollen.
 
-`growth` (`@export_range(0, 100)`) drives the whole plant's `scale` (`lerp(0.12, 1.0, growth / 100)` — barely visible near 0, full size at 100) and, once `growth` passes `BLOOM_START` (70), fades `Bloom` in and scales it from 0 to full over the remaining range while hiding `Sprout/Bud` (the bloom replaces the bud, it doesn't sit alongside it). `bloom_type` (`@export`) picks which flower/fruit variant shows — instances in `main.tscn` each set both to different values so the level shows a range of growth stages and a different bloom per seedling. `water(delta)` raises `growth` at a fixed rate (`100 / grow_time`, default 5s for 0%→100%) — called by `player.gd` each physics tick the bug hovers over `HoverZone` (see Movement model below).
+The plant is an explicit lifecycle state machine (`State` enum): `GROWING → BLOOMED → POLLINATED → SEED_GROWING → (seed pops) → BLOOMED`. `state` is a plain (non-exported) var derived at `_ready` from `growth`; `POLLINATED` and `SEED_GROWING` exist in the enum but are not yet reachable (pollination and seed production are later REQUIREMENTS.md steps). Every visual is a function of `(state, progress, bloom_type)` in `_update_visuals()` — no visual state lives anywhere else.
+
+`growth` (`@export_range(0, 100)`) is the `GROWING` state's progress. It drives the whole plant's `scale` (`lerp(0.12, 1.0, growth / 100)` — barely visible near 0, full size at 100) and, once `growth` passes `BLOOM_START` (70), fades `Bloom` in and scales it from 0 to full over the remaining range while hiding `Sprout/Bud` (the bloom replaces the bud, it doesn't sit alongside it). Reaching 100 flips `state` to `BLOOMED` (the setter keeps this in sync both directions so the editor preview works). `bloom_type` (`@export`, typed `PlantData.PlantType`) picks which flower/fruit variant shows — instances in `main.tscn` each set both to different values so the level shows a range of growth stages and a different bloom per seedling. `water(delta)` raises `growth` at a fixed rate (`100 / grow_time`, default 5s for 0%→100%) — called by `player.gd` each physics tick the bug hovers over `HoverZone` (see Movement model below).
+
+### `scripts/plant_data.gd` — plant data table
+
+`PlantData` (`class_name`, not attached to any node) is the single source of truth for plant data: the `PlantType` enum (currently the five base plants; hybrids arrive with the pollination steps) and `POLLEN_COLORS`, a typed const table mapping each type to its pollen color, read via `PlantData.pollen_color(type)`. Gameplay and UI must both read plant facts from here — the combo table and display names land in this file as later REQUIREMENTS.md steps build them; nothing else may hardcode that data. `PlantType`'s value order matches the old `Seedling.BloomType` so `bloom_type` ints saved in `main.tscn` still map to the same plants.
 
 ### `scenes/hud.tscn` — water meter
 
@@ -88,7 +94,8 @@ There is no level-loading or scene-management system yet — `main.tscn` *is* th
 
 ## Known gaps / not yet built
 
-- No level-transition, scoring, win/lose, or win condition tied to a full water meter — drinking and watering seedlings both move `water_level` but nothing else consumes it, and there's no win condition for growing all seedlings to full bloom.
+- The pollination game (REQUIREMENTS.md) is at Step 1 of 8: the seedling lifecycle state machine and pollen cue exist, but `POLLINATED`/`SEED_GROWING` are unreachable — no pollen pickup, pollination, seeds, plots, combo chart, goal panel, or win condition yet.
+- No level-transition, scoring, or win/lose — drinking and watering seedlings both move `water_level` but nothing else consumes it.
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.
 
