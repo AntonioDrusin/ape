@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/platform.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+
+[node name="Main" type="Node2D"]
+
+[node name="Ground" parent="." instance=ExtResource("1")]
+position = Vector2(300, 420)
+scale = Vector2(7, 1.5)
+
+[node name="Platform1" parent="." instance=ExtResource("1")]
+position = Vector2(-150, 260)
+scale = Vector2(1.4, 1)
+
+[node name="Platform2" parent="." instance=ExtResource("1")]
+position = Vector2(260, 160)
+scale = Vector2(1, 1)
+
+[node name="Platform3" parent="." instance=ExtResource("1")]
+position = Vector2(620, 60)
+scale = Vector2(1.8, 1)
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 300)
