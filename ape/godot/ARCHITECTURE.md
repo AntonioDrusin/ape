@@ -15,12 +15,17 @@ Godot 4.7 project, GL Compatibility renderer. Engine version and renderer are pi
 
 - `Ground`, `Platform1`, `Platform2`, `Platform3` — instances of `platform.tscn`, positioned/scaled per-instance to build the level layout. No platform-specific script; layout is entirely position + scale data on the instance.
 - `Player` — instance of `player.tscn`.
+- `WaterPond`, `WaterPuddle` — instances of `water.tscn`, one at ground level and one on a ledge (`Platform2`), showing water can sit at the bottom or up on a platform. Every level is expected to have some water.
 
 There is no level-loading or scene-management system yet — `main.tscn` *is* the level. If a second level is added, this needs a level-container/loader layer before it grows further (see Coding conventions in CODING.md — don't build that abstraction until it's needed).
 
 ### `scenes/platform.tscn` — static level geometry
 
 `Platform` (`StaticBody2D`) with a `CollisionShape2D` (`RectangleShape2D`) and two `Polygon2D` children (`Visual` body, `Top` accent strip) for rendering. No script. Scaling the root node scales collision and visuals together — this is the supported way to resize a platform instance, not editing the shape resource per-instance.
+
+### `scenes/water.tscn` — water
+
+`Water` (`Area2D`) with a `CollisionShape2D` (`RectangleShape2D`) and two `Polygon2D` children (`Visual` body, `Surface` highlight strip), mirroring `platform.tscn`'s structure but with an `Area2D` root instead of `StaticBody2D` — water doesn't block the player like solid ground, it needs to detect the player entering/leaving it. No script yet: the bug doesn't interact with water yet (no swim/drown/drink behavior implemented), but the `Area2D` root is what a future interaction script (or the player, via `body_entered`/`body_exited`) will hook into. Scaling the root resizes collision and visuals together, same convention as `platform.tscn`.
 
 ### `scenes/player.tscn` — the flying bug
 
@@ -45,6 +50,7 @@ There is no level-loading or scene-management system yet — `main.tscn` *is* th
 
 - No level-transition, scoring, win/lose, or UI/HUD layer.
 - No enemies or hazards.
+- Water (`water.tscn`) exists as level geometry but has no interaction behavior yet (no swim/drown/drink/splash) — the bug currently just flies over/through it.
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.
 

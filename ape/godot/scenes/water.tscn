@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(128, 32)
+
+[node name="Water" type="Area2D"]
+monitorable = true
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.15, 0.45, 0.75, 0.75)
+polygon = PackedVector2Array(-64, -16, 64, -16, 64, 16, -64, 16)
+
+[node name="Surface" type="Polygon2D" parent="."]
+color = Color(0.55, 0.8, 0.95, 0.85)
+polygon = PackedVector2Array(-64, -16, 64, -16, 64, -10, -64, -10)
