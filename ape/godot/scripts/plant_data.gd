@@ -73,9 +73,32 @@ const SEED_COLORS: Dictionary[PlantType, Color] = {
 	PlantType.CHERRY: Color(0.7, 0.05, 0.15),
 }
 
+## Human-readable names, used for the Step 5 combo chart's tooltips. These
+## also double as the lookup key into seedling.tscn's Bloom/<Name> children
+## (every Bloom child is named exactly one of these strings), so a second
+## name table isn't needed for plant_icon_source.gd.
+const DISPLAY_NAMES: Dictionary[PlantType, String] = {
+	PlantType.DAISY: "Daisy",
+	PlantType.TULIP: "Tulip",
+	PlantType.BERRY: "Berry",
+	PlantType.APPLE: "Apple",
+	PlantType.SUNFLOWER: "Sunflower",
+	PlantType.ROSE: "Rose",
+	PlantType.LAVENDER: "Lavender",
+	PlantType.STARBLOOM: "Starbloom",
+	PlantType.ORCHID: "Orchid",
+	PlantType.FIRELILY: "Firelily",
+	PlantType.PLUM: "Plum",
+	PlantType.PUMPKIN: "Pumpkin",
+	PlantType.CHERRY: "Cherry",
+}
 
 static func pollen_color(type: PlantType) -> Color:
 	return POLLEN_COLORS[type]
+
+
+static func display_name(type: PlantType) -> String:
+	return DISPLAY_NAMES[type]
 
 
 static func accepts_pollen(type: PlantType) -> bool:
@@ -95,3 +118,15 @@ static func _pair_key(a: PlantType, b: PlantType) -> int:
 ## themselves before calling this.
 static func combo_result(a: PlantType, b: PlantType) -> PlantType:
 	return COMBO_TABLE.get(_pair_key(a, b), PlantType.NONE)
+
+
+## Decodes COMBO_TABLE's packed keys back into their two base-type operands,
+## so the Step 5 combo chart can be generated from this table instead of
+## hand-listed. Each entry: {"a": PlantType, "b": PlantType, "result": PlantType}.
+static func all_combos() -> Array[Dictionary]:
+	var combos: Array[Dictionary] = []
+	for key: int in COMBO_TABLE:
+		var a: PlantType = key / 100 as PlantType
+		var b: PlantType = key % 100 as PlantType
+		combos.append({"a": a, "b": b, "result": COMBO_TABLE[key]})
+	return combos

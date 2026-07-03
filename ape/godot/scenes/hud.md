@@ -1,5 +1,11 @@
-# `hud.tscn` — water meter
+# `hud.tscn` — water meter and combo chart
 
 `HUD` (`CanvasLayer`), script: `scripts/hud.gd`, with a `Control` anchored top-left containing a `ProgressBar` (`WaterMeter`, range 0-1). `hud.gd` finds the player via the `player` group in `_ready()` and connects to its `water_level_changed` signal — the HUD reaches out to the player rather than the player knowing about the HUD, so `player.gd` stays UI-agnostic.
 
 `WaterMeter` is themed blue (`StyleBoxFlat` overrides on `background`/`fill`) with a `ShaderMaterial` (`assets/shaders/water_meter.gdshader`) giving both bars a rippling top edge (vertex displacement) and a shimmering brightness pulse (fragment) — purely cosmetic, doesn't touch `value`. `clip_contents = true` on `WaterMeter` keeps its `Bubbles` child (`CPUParticles2D`, rectangle emission spanning the bar) contained to the bar's rect as small bubbles drift upward and fade, matching the CPUParticles2D convention used elsewhere (`WaterDrip`, `PollenPuff`).
+
+## `ComboChart`
+
+`ComboChart` (`Panel`, script `scripts/combo_chart.gd`) is a second top-level child of `HUD`, anchored to the vertical-center-right of the viewport (`anchors_preset = CENTER_RIGHT`, `grow_horizontal = GROW_DIRECTION_BEGIN`) so it stays pinned to the right edge on window resize. It has no child nodes — all 8 rows are custom-drawn in `_draw()`, generated from `PlantData.all_combos()` at `_ready()` rather than hand-authored here, so the chart can never drift out of sync with the actual combo outcomes.
+
+Each row draws three same-scale mini plant icons — the two parent types and the hybrid result — plus a `+`/`=` glyph pair between them. Every icon's polygon+color data is read off `seedling.tscn`'s `Bloom/<Name>` subtree at startup via `scripts/plant_icon_source.gd` (instantiated off-tree and freed immediately, never added to the live scene), so icons can never drift from the actual in-world plant visuals. Per-row tooltips (the plant's display name via `PlantData.display_name()`) are computed dynamically from mouse position in an overridden `_get_tooltip()`, rather than one tooltip-bearing child Control per row. Press "1" (`toggle_combo_chart` input action, handled in the chart's own `_unhandled_input()`) to show/hide the panel; it starts visible.

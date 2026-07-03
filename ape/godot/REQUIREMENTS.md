@@ -102,9 +102,10 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 ### Step 5 — Combo chart panel
 
-- A panel anchored to the **right edge** of the screen, always visible, listing the 8 combos: `[pollen swatch] + [pollen swatch] = [mini plant icon]` per row.
+- A panel anchored to the **right edge** of the screen, always visible, listing the 8 combos: `[mini plant icon] + [mini plant icon] = [mini plant icon]` per row.
 - Icons must match the in-world plants (same shapes/colors, scaled down) so the player can map chart → world at a glance.
 - Semi-transparent background; must not obscure gameplay; must stay anchored correctly if the window is resized.
+- Key "1" can show and hide the panel.
 
 **Testable:** chart readable at a glance; matches actual combo outcomes exactly.
 
@@ -113,6 +114,7 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 - A **goal panel** (top of screen or top-left, clear of the water meter) shows this round's target plants as mini icons: 4 plants — 3 hybrids + 1 base type, chosen at random per run (seeded at level start).
 - A goal entry checks off (visibly: color fills in, checkmark, small flourish) when a plant of that type reaches full bloom anywhere in the level. It un-checks if that condition stops holding only if trivial to track — otherwise once checked, it stays checked (prefer the simpler rule).
 - When all goals are checked: **win overlay** — congratulatory message, celebration (particles, sound sting), and a "Play again" button that reloads the level with a fresh random goal set.
+- Key "2" can show and hide the panel.
 
 **Testable:** grow the target set, see the win screen, restart works.
 

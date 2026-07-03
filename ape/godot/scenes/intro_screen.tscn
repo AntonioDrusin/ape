@@ -42,7 +42,9 @@ autowrap_mode = 2
 text = "You're a bug flying through a garden.
 WASD or Arrow Keys to fly, Space to thrust upward.
 Hover over water to get water and drop it over the plants.
-Pickup pollen to pollinate and create fruits. Use Q to shed the pollen.
+Pickup pollen to pollinate and create fruits. 
+Use Q to shed the pollen.
+Use 1, 2 to see panels.
 Watch out for enemies - they'll steal your water!"
 
 [node name="StartPrompt" type="Label" parent="VBoxContainer"]
