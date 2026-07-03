@@ -89,6 +89,14 @@ var _shimmer_t: float = 0.0
 	PlantData.PlantType.BERRY: $Bloom/Berry,
 	PlantData.PlantType.APPLE: $Bloom/Apple,
 	PlantData.PlantType.SUNFLOWER: $Bloom/Sunflower,
+	PlantData.PlantType.ROSE: $Bloom/Rose,
+	PlantData.PlantType.LAVENDER: $Bloom/Lavender,
+	PlantData.PlantType.STARBLOOM: $Bloom/Starbloom,
+	PlantData.PlantType.ORCHID: $Bloom/Orchid,
+	PlantData.PlantType.FIRELILY: $Bloom/Firelily,
+	PlantData.PlantType.PLUM: $Bloom/Plum,
+	PlantData.PlantType.PUMPKIN: $Bloom/Pumpkin,
+	PlantData.PlantType.CHERRY: $Bloom/Cherry,
 }
 
 
@@ -163,10 +171,12 @@ func _update_visuals() -> void:
 	bud.visible = bloom_t <= 0.0
 	for type: PlantData.PlantType in _blooms:
 		_blooms[type].visible = type == bloom_type
-	pollen_cue.visible = state == State.BLOOMED
-	var pollen_color: Color = PlantData.pollen_color(bloom_type)
-	for dot: Polygon2D in _pollen_dots:
-		dot.color = pollen_color
+	var offers_pollen: bool = state == State.BLOOMED and PlantData.accepts_pollen(bloom_type)
+	pollen_cue.visible = offers_pollen
+	if offers_pollen:
+		var pollen_color: Color = PlantData.pollen_color(bloom_type)
+		for dot: Polygon2D in _pollen_dots:
+			dot.color = pollen_color
 	sparkle.emitting = state == State.POLLINATED
 	if state != State.POLLINATED:
 		bloom.modulate = Color(1.0, 1.0, 1.0)

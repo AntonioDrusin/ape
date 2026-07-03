@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/wings.gd" id="2"]
 [ext_resource type="AudioStream" path="res://assets/audio/pollen_collect.wav" id="3"]
 [ext_resource type="AudioStream" path="res://assets/audio/pollinate_success.wav" id="4"]
 [ext_resource type="AudioStream" path="res://assets/audio/pollen_puff.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/seed_pickup.wav" id="6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 14.0
@@ -98,6 +99,29 @@ stream = ExtResource("4")
 
 [node name="PollenPuffSound" type="AudioStreamPlayer2D" parent="Visual"]
 stream = ExtResource("5")
+
+[node name="SeedCarry" type="Polygon2D" parent="Visual"]
+visible = false
+position = Vector2(-4, 12)
+polygon = PackedVector2Array(0, -6, 4, -3, 4, 3, 0, 6, -4, 3, -4, -3)
+
+[node name="SeedPickupPuff" type="CPUParticles2D" parent="Visual/SeedCarry"]
+emitting = false
+one_shot = true
+amount = 12
+lifetime = 0.5
+explosiveness = 0.9
+direction = Vector2(0, -1)
+spread = 100.0
+gravity = Vector2(0, 60)
+initial_velocity_min = 20.0
+initial_velocity_max = 50.0
+scale_amount_min = 1.2
+scale_amount_max = 2.2
+color = Color(0.9, 0.85, 0.5, 0.85)
+
+[node name="SeedPickupSound" type="AudioStreamPlayer2D" parent="Visual"]
+stream = ExtResource("6")
 
 [node name="Wings" type="Node2D" parent="Visual"]
 position = Vector2(-2, -6)

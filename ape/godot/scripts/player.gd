@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 signal water_level_changed(value: float)
 signal pollen_changed(has_pollen: bool, pollen_type: PlantData.PlantType)
+signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 
 @export var thrust: float = 900.0
 @export var gravity: float = 260.0
@@ -21,6 +22,9 @@ signal pollen_changed(has_pollen: bool, pollen_type: PlantData.PlantType)
 @onready var pollinate_sound: AudioStreamPlayer2D = $Visual/PollinateSound
 @onready var pollen_puff_sound: AudioStreamPlayer2D = $Visual/PollenPuffSound
 @onready var pollen_puff: CPUParticles2D = $Visual/PollenBlob/PollenPuff
+@onready var seed_carry: Polygon2D = $Visual/SeedCarry
+@onready var seed_pickup_sound: AudioStreamPlayer2D = $Visual/SeedPickupSound
+@onready var seed_pickup_puff: CPUParticles2D = $Visual/SeedCarry/SeedPickupPuff
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
@@ -29,6 +33,8 @@ var water_level: float = 0.0
 var facing_x: float = 1.0
 var has_pollen: bool = false
 var pollen_type: PlantData.PlantType = PlantData.PlantType.DAISY
+var has_seed: bool = false
+var seed_type: PlantData.PlantType = PlantData.PlantType.DAISY
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -80,13 +86,19 @@ func _physics_process(delta: float) -> void:
 		water_level_changed.emit(water_level)
 
 	# Hovering over a seedling's HoverZone waters it and drives pollen
-	# interactions — same sensor used for water detection since all three are
-	# just "what's the bug currently over."
+	# interactions; overlapping a loose seed or an empty plot drives seed
+	# carrying/planting — same sensor used for water detection since all of
+	# this is just "what's the bug currently over."
 	var hovered_seedling: Node = null
+	var hovered_seed: Area2D = null
+	var hovered_plot: Area2D = null
 	for area in water_sensor.get_overlapping_areas():
 		if area.is_in_group("seedling"):
 			hovered_seedling = area.get_parent()
-			break
+		elif area.is_in_group("seed"):
+			hovered_seed = area
+		elif area.is_in_group("plot"):
+			hovered_plot = area
 
 	if hovered_seedling and water_level > 0.0:
 		hovered_seedling.water(delta)
@@ -95,6 +107,16 @@ func _physics_process(delta: float) -> void:
 
 	if hovered_seedling:
 		_handle_pollen_hover(hovered_seedling)
+
+	# Flying into a loose seed picks it up instantly (no hover-and-wait, unlike
+	# watering/pollen) as long as the seed slot is free.
+	if hovered_seed and not has_seed:
+		_pick_up_seed(hovered_seed)
+
+	# Hovering an empty plot while carrying a seed plants it there.
+	if hovered_plot and has_seed and hovered_plot.is_empty:
+		hovered_plot.plant(seed_type)
+		_set_seed(false, seed_type)
 
 	if Input.is_action_just_pressed("shed_pollen") and has_pollen:
 		_set_pollen(false, pollen_type)
@@ -117,6 +139,8 @@ func _physics_process(delta: float) -> void:
 ## debounce is needed (same reasoning the watering poll above relies on).
 func _handle_pollen_hover(seedling: Node) -> void:
 	if seedling.state != seedling.State.BLOOMED:
+		return
+	if not PlantData.accepts_pollen(seedling.bloom_type):
 		return
 	if not has_pollen:
 		_set_pollen(true, seedling.collect_pollen())
@@ -147,6 +171,29 @@ func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
 	if has_pollen:
 		pollen_blob.color = PlantData.pollen_color(pollen_type)
 	pollen_changed.emit(has_pollen, pollen_type)
+
+
+## Picks up a loose seed area: reads its plant_type, frees the seed node
+## (it's consumed, unlike a flower that keeps offering pollen), and plays the
+## pickup feedback on the player.
+func _pick_up_seed(seed_area: Area2D) -> void:
+	_set_seed(true, seed_area.plant_type)
+	seed_area.queue_free()
+	seed_pickup_puff.restart()
+	seed_pickup_puff.emitting = true
+	seed_pickup_sound.pitch_scale = randf_range(0.9, 1.1)
+	seed_pickup_sound.play()
+
+
+func _set_seed(carrying: bool, type: PlantData.PlantType) -> void:
+	if carrying == has_seed and type == seed_type:
+		return
+	has_seed = carrying
+	seed_type = type
+	seed_carry.visible = has_seed
+	if has_seed:
+		seed_carry.color = PlantData.seed_color(seed_type)
+	seed_changed.emit(has_seed, seed_type)
 
 
 func steal_water(amount: float) -> void:

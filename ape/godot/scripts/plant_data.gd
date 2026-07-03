@@ -24,6 +24,18 @@ const POLLEN_COLORS: Dictionary[PlantType, Color] = {
 	PlantType.SUNFLOWER: Color(1.0, 0.58, 0.08),
 }
 
+## Which plant types currently offer/accept pollen. A property of the type,
+## not derivable from "is it one of the original five" — REQUIREMENTS.md
+## notes hybrids may accept pollen in a future update, so this stays a table
+## rather than a range check on PlantType's int value.
+const ACCEPTS_POLLEN: Dictionary[PlantType, bool] = {
+	PlantType.DAISY: true,
+	PlantType.TULIP: true,
+	PlantType.BERRY: true,
+	PlantType.APPLE: true,
+	PlantType.SUNFLOWER: true,
+}
+
 ## Unordered base-pair combos (REQUIREMENTS.md "Hybrid combos"), keyed by
 ## _pair_key(a, b). Base pairs with no entry here (and not same-type) are
 ## fizzles — the 2 documented fizzles are exactly the pairs left over from
@@ -64,6 +76,10 @@ const SEED_COLORS: Dictionary[PlantType, Color] = {
 
 static func pollen_color(type: PlantType) -> Color:
 	return POLLEN_COLORS[type]
+
+
+static func accepts_pollen(type: PlantType) -> bool:
+	return ACCEPTS_POLLEN.get(type, false)
 
 
 static func seed_color(type: PlantType) -> Color:

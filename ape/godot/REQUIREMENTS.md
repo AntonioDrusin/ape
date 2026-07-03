@@ -91,7 +91,7 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 **Testable:** water a pollinated flower, watch a seed pop out.
 
-### Step 4 — Seed carrying and plots
+### Step 4 — Seed carrying and plots [COMPLETE]
 
 - **Plot** (new scene): a small dirt mound, visually obvious as "plantable here". Place 8–10 around `main.tscn` on ground and platforms.
 - Flying into a loose seed picks it up (if the seed slot is free); it hangs visibly beneath the bee.
