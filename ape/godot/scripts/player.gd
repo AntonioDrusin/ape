@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 signal water_level_changed(value: float)
+signal pollen_changed(has_pollen: bool, pollen_type: PlantData.PlantType)
 
 @export var thrust: float = 900.0
 @export var gravity: float = 260.0
@@ -15,12 +16,19 @@ signal water_level_changed(value: float)
 @onready var proboscis: Node2D = $Visual/Proboscis
 @onready var water_drip: CPUParticles2D = $Visual/Proboscis/WaterDrip
 @onready var water_sensor: Area2D = $WaterSensor
+@onready var pollen_blob: Polygon2D = $Visual/PollenBlob
+@onready var pollen_collect_sound: AudioStreamPlayer2D = $Visual/PollenCollectSound
+@onready var pollinate_sound: AudioStreamPlayer2D = $Visual/PollinateSound
+@onready var pollen_puff_sound: AudioStreamPlayer2D = $Visual/PollenPuffSound
+@onready var pollen_puff: CPUParticles2D = $Visual/PollenBlob/PollenPuff
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
 
 var water_level: float = 0.0
 var facing_x: float = 1.0
+var has_pollen: bool = false
+var pollen_type: PlantData.PlantType = PlantData.PlantType.DAISY
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -71,24 +79,74 @@ func _physics_process(delta: float) -> void:
 		water_level = minf(water_level + delta / water_fill_time, 1.0)
 		water_level_changed.emit(water_level)
 
-	# Hovering over a seedling's HoverZone waters it, same sensor used for
-	# water detection since both are just "what's the bug currently over."
-	var watering_seedling: Node = null
-	if water_level > 0.0:
-		for area in water_sensor.get_overlapping_areas():
-			if area.is_in_group("seedling"):
-				watering_seedling = area.get_parent()
-				break
-	if watering_seedling:
-		watering_seedling.water(delta)
+	# Hovering over a seedling's HoverZone waters it and drives pollen
+	# interactions — same sensor used for water detection since all three are
+	# just "what's the bug currently over."
+	var hovered_seedling: Node = null
+	for area in water_sensor.get_overlapping_areas():
+		if area.is_in_group("seedling"):
+			hovered_seedling = area.get_parent()
+			break
+
+	if hovered_seedling and water_level > 0.0:
+		hovered_seedling.water(delta)
 		water_level = maxf(water_level - delta / water_drain_time, 0.0)
 		water_level_changed.emit(water_level)
 
-	var watering := watering_seedling != null
+	if hovered_seedling:
+		_handle_pollen_hover(hovered_seedling)
+
+	if Input.is_action_just_pressed("shed_pollen") and has_pollen:
+		_set_pollen(false, pollen_type)
+		pollen_puff.restart()
+		pollen_puff.emitting = true
+		pollen_puff_sound.pitch_scale = randf_range(0.9, 1.1)
+		pollen_puff_sound.play()
+
+	var watering := hovered_seedling != null and water_level > 0.0
 	if proboscis:
 		proboscis.visible = drinking or watering
 	if water_drip:
 		water_drip.emitting = watering
+
+
+## Hovering a BLOOMED flower with an empty pollen slot collects it; carrying
+## a different-colored pollen attempts to pollinate it (fizzle or success);
+## carrying the same-colored pollen is a no-op. Self-limiting: once the
+## flower leaves BLOOMED, further hovering does nothing more, so no
+## debounce is needed (same reasoning the watering poll above relies on).
+func _handle_pollen_hover(seedling: Node) -> void:
+	if seedling.state != seedling.State.BLOOMED:
+		return
+	if not has_pollen:
+		_set_pollen(true, seedling.collect_pollen())
+		pollen_collect_sound.pitch_scale = randf_range(0.9, 1.1)
+		pollen_collect_sound.play()
+		return
+	if pollen_type == seedling.bloom_type:
+		return
+	match seedling.pollinate(pollen_type):
+		seedling.PollinateResult.SUCCESS:
+			_set_pollen(false, pollen_type)
+			pollinate_sound.pitch_scale = randf_range(0.9, 1.1)
+			pollinate_sound.play()
+		seedling.PollinateResult.FIZZLE:
+			_set_pollen(false, pollen_type)
+			pollen_puff.restart()
+			pollen_puff.emitting = true
+			pollen_puff_sound.pitch_scale = randf_range(0.9, 1.1)
+			pollen_puff_sound.play()
+
+
+func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
+	if carrying == has_pollen and type == pollen_type:
+		return
+	has_pollen = carrying
+	pollen_type = type
+	pollen_blob.visible = has_pollen
+	if has_pollen:
+		pollen_blob.color = PlantData.pollen_color(pollen_type)
+	pollen_changed.emit(has_pollen, pollen_type)
 
 
 func steal_water(amount: float) -> void:

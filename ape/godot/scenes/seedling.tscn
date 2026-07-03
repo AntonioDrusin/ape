@@ -124,11 +124,40 @@ polygon = PackedVector2Array(-2.5, -20.5, 2.5, -20.5, 2.5, -15.5, -2.5, -15.5)
 
 [node name="PollenCue" type="Node2D" parent="Bloom"]
 
+[node name="Dot1Border" type="Polygon2D" parent="Bloom/PollenCue"]
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(0, -21.5, 3.8, -17.7, 0, -13.9, -3.8, -17.7)
+
 [node name="Dot1" type="Polygon2D" parent="Bloom/PollenCue"]
 polygon = PackedVector2Array(0, -19.5, 1.8, -17.7, 0, -15.9, -1.8, -17.7)
+
+[node name="Dot2Border" type="Polygon2D" parent="Bloom/PollenCue"]
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(-4, -18.4, -0.4, -14.8, -4, -11.2, -7.6, -14.8)
 
 [node name="Dot2" type="Polygon2D" parent="Bloom/PollenCue"]
 polygon = PackedVector2Array(-4, -16.4, -2.4, -14.8, -4, -13.2, -5.6, -14.8)
 
+[node name="Dot3Border" type="Polygon2D" parent="Bloom/PollenCue"]
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(4.2, -20.3, 7.6, -16.9, 4.2, -13.5, 0.8, -16.9)
+
 [node name="Dot3" type="Polygon2D" parent="Bloom/PollenCue"]
 polygon = PackedVector2Array(4.2, -18.3, 5.6, -16.9, 4.2, -15.5, 2.8, -16.9)
+
+[node name="Sparkle" type="CPUParticles2D" parent="Bloom"]
+position = Vector2(0, -17)
+emitting = false
+amount = 8
+lifetime = 0.9
+speed_scale = 1.0
+explosiveness = 0.0
+randomness = 0.5
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 4.0
+initial_velocity_max = 14.0
+scale_amount_min = 1.0
+scale_amount_max = 2.0
+color = Color(1, 0.95, 0.6, 0.9)

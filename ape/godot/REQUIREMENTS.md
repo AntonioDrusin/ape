@@ -59,7 +59,7 @@ The two remaining base pairs (Daisy + Apple, Berry + Sunflower) **fizzle**: the 
 
 ## Incremental build steps
 
-### Step 1 — Plant lifecycle state machine
+### Step 1 — Plant lifecycle state machine [COMPLETE]
 
 Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
@@ -72,15 +72,16 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 **Testable:** game plays as today; bloomed base flowers now show pollen dots.
 
-### Step 2 — Pollen pickup and pollination
+### Step 2 — Pollen pickup and pollination [COMPLETE]
 
-- Hovering over a `BLOOMED` base flower with an empty (or different-colored) pollen slot collects its pollen. A clearly visible colored blob appears on the rear of the bee's `Visual` (it must mirror with facing, like the proboscis).
-- Hovering over a *different* `BLOOMED` base flower while carrying pollen pollinates it: state → `POLLINATED`, resulting hybrid type computed from the combo table and stored on the plant, pollen slot cleared.
-- `POLLINATED` visual: the flower visibly changes — e.g., gentle sparkle particles (CPU) and a slight color shimmer — so the player knows it's waiting for water.
+- Hovering over a `BLOOMED` base flower with an **empty** pollen slot collects its pollen. A clearly visible colored blob appears on the rear of the bee's `Visual` (it mirrors with facing, like the proboscis).
+- Hovering over a *different*-colored `BLOOMED` base flower while carrying pollen pollinates it: state → `POLLINATED`, resulting hybrid type computed from the combo table and stored on the plant, pollen slot cleared. Hovering a *same*-colored flower while carrying pollen is a no-op.
+- A **`shed_pollen`** action (bound to `Q`) drops carried pollen outright with a puff, independent of any hover target — since pollen is only ever collected from an empty slot, this is how the player discards an unwanted color to go collect a different one.
+- `POLLINATED` visual: the flower visibly changes — gentle sparkle particles (CPU) and a slight color shimmer — so the player knows it's waiting for water.
 - Fizzle pairs: dust-puff particle, pollen consumed, state stays `BLOOMED`.
 - Same-type: nothing happens.
 
-**Testable:** collect pollen, see it on the bee, pollinate a second flower, see it change.
+**Testable:** collect pollen, see it on the bee, pollinate a second flower, see it change; `Q` sheds carried pollen.
 
 ### Step 3 — Seed production
 
