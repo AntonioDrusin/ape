@@ -50,13 +50,16 @@ Orientation only — read the `.tscn`/`.gd` for detail.
 - `seed.tscn` / `plot.tscn` — the passive detectables of the carry-and-plant loop: a loose seed is consumed by the player's poll; a plot's `plant()` emits `seed_planted` for `Main` to spawn the new seedling.
 - `hud.tscn` — `WaterMeter` (player water level), `ComboChart` (toggle "1"), `GoalPanel` (toggle "2"). The two panels are child-node-free custom-`_draw()` Controls whose rows are generated per pattern 4 (combos from `PlantData`, goals from `Main`'s roll).
 - `win_overlay.tscn` — spawned by `Main` on win rather than pre-placed (one-shot terminal UI); "Play again" reloads the level scene, which re-rolls the goals.
+- `crt_overlay.tscn` — full-screen CRT post-process: a `CanvasLayer` at layer 100 (must stay above every other layer — the shader reads the finished frame, so anything higher would escape the effect) holding a mouse-ignoring `ColorRect` with `crt.gdshader` (barrel curvature, scanlines, edge defocus, slight color aberration, vignette, phosphor mask). Instanced last in both `main_menu.tscn` and `main.tscn`; all knobs are shader uniforms. `scripts/crt_overlay.gd` shows/hides it from `Settings.crt_enabled` and its `crt_enabled_changed` signal, so the toggle in `main_menu.tscn` (`CrtToggle`) affects both scenes.
+- `scripts/settings.gd` (`Settings` autoload) — persisted user preferences (`crt_enabled`, `good_music`), saved to `user://settings.cfg` via `ConfigFile`.
+- `scripts/game_music.gd` — attached to `main.tscn`'s `Music` node; picks between two `@export`ed streams at `_ready()` based on `Settings.good_music` (read once at level start, not live-toggled mid-run).
 - `scripts/plant_data.gd` (`PlantData`, not attached to a node) — the pattern-4 data table: `PlantType` enum (explicit values — `bloom_type` ints saved in `main.tscn` must keep mapping to the same plants), color tables, `ACCEPTS_POLLEN`, the hybrid combo table.
 - `scripts/plant_icon_source.gd` (`PlantIconSource`, not attached to a node) — extracts bloom polygon/color data by instantiating `seedling.tscn` off-tree, so UI icons can never drift from the in-world plant visuals and no live seedling (with its collision/groups) ever backs a decorative icon.
 
 ## Known gaps / not yet built
 
 - No level-transition or scoring beyond the single win condition — nothing consumes `water_level` besides watering, and there's no losing state (Step 7's enemies are pressure, not failure).
-- No save/settings system.
+- No save/settings system beyond the CRT toggle.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.
 
 Update this section as these are built, rather than leaving it to go stale.

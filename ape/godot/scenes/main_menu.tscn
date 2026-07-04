@@ -1,44 +1,61 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dacsp80ea0g4v"]
 
-[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1"]
+[ext_resource type="Script" uid="uid://bhwohu0dlc5sx" path="res://scripts/main_menu.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/crt_overlay.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://bbmxsximvfgjl" path="res://assets/images/APE.png" id="3"]
 
-[node name="MainMenu" type="CanvasLayer"]
+[node name="MainMenu" type="CanvasLayer" unique_id=1126795411]
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1410678242]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.08, 0.12, 1)
+color = Color(0.12479257, 0.37194535, 0.40693521, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="TextBackground" type="TextureRect" parent="." unique_id=1148573902]
+modulate = Color(1, 1, 1, 0.77254903)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -150.0
-offset_right = 260.0
-offset_bottom = 160.0
+offset_left = -207.0
+offset_top = -321.0
+offset_right = 713.0
+offset_bottom = 310.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1543178265]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -582.0
+offset_top = -197.0
+offset_right = -39.0
+offset_bottom = 211.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="Title" type="Label" parent="VBoxContainer" unique_id=1302274511]
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
-horizontal_alignment = 1
 text = "Ape"
-
-[node name="Instructions" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
-autowrap_mode = 2
+
+[node name="Instructions" type="Label" parent="VBoxContainer" unique_id=397902260]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
 text = "You're a bug flying through a garden.
 WASD or Arrow Keys to fly, Space to thrust upward.
 Hover over water to get water and drop it over the plants.
@@ -46,16 +63,29 @@ Pickup pollen to pollinate and create fruits.
 Use Q to shed the pollen.
 Use 1, 2 to see panels.
 Watch out for enemies - they'll steal your water!"
-
-[node name="StartPrompt" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-horizontal_alignment = 1
-text = "Press SPACE to start"
-
-[node name="MusicCredit" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 autowrap_mode = 2
+
+[node name="CrtToggle" type="CheckButton" parent="VBoxContainer" unique_id=551482610]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CRT Effect"
+
+[node name="GoodMusicToggle" type="CheckButton" parent="VBoxContainer" unique_id=1307821088]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Good Music"
+
+[node name="MusicCredit" type="Label" parent="VBoxContainer" unique_id=1734029066]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Music: \"Happy Bee\" by Kevin MacLeod (incompetech.com), CC BY 3.0"
+horizontal_alignment = 1
+
+[node name="StartPrompt" type="Button" parent="VBoxContainer" unique_id=1952382765]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "Press SPACE to start"
+
+[node name="CrtOverlay" parent="." unique_id=614866050 instance=ExtResource("2")]

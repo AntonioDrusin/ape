@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/wall.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="5"]
 [ext_resource type="AudioStream" uid="uid://bwbe83n6rs56a" path="res://assets/audio/happy_bee.mp3" id="6"]
+[ext_resource type="AudioStream" uid="uid://b0hh6t1xdlsww" path="res://assets/audio/Entropy of the Infinite.mp3" id="16"]
+[ext_resource type="Script" path="res://scripts/game_music.gd" id="17"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/seedling.tscn" id="8"]
 [ext_resource type="Script" uid="uid://d2fmlpv1wje64" path="res://scripts/main.gd" id="9"]
@@ -13,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/background.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/flower_guard.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/tree_trunk_wall.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/crt_overlay.tscn" id="15"]
 
 [node name="Main" type="Node2D" unique_id=161603854 groups=["main"]]
 script = ExtResource("9")
@@ -20,9 +23,11 @@ script = ExtResource("9")
 [node name="Background" parent="." unique_id=1588520922 instance=ExtResource("12")]
 
 [node name="Music" type="AudioStreamPlayer" parent="." unique_id=1498417172]
-stream = ExtResource("6")
-volume_db = -20.0
-autoplay = true
+script = ExtResource("17")
+good_music_stream = ExtResource("16")
+good_music_volume_db = -14.0
+default_stream = ExtResource("6")
+default_volume_db = -20.0
 
 [node name="HUD" parent="." unique_id=1979802882 instance=ExtResource("5")]
 
@@ -220,3 +225,5 @@ position = Vector2(83, 127)
 
 [node name="FlowerGuard5" parent="." unique_id=1714610262 instance=ExtResource("13")]
 position = Vector2(607, -19)
+
+[node name="CrtOverlay" parent="." unique_id=1837465920 instance=ExtResource("15")]
