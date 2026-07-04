@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/plot.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/background.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/flower_guard.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/tree_trunk_wall.tscn" id="14"]
 
 [node name="Main" type="Node2D" unique_id=161603854 groups=["main"]]
 script = ExtResource("9")
@@ -152,15 +153,11 @@ scale = Vector2(13, 1)
 position = Vector2(400, 460)
 scale = Vector2(13, 1)
 
-[node name="BoundsLeft" parent="." unique_id=43662256 instance=ExtResource("4")]
+[node name="BoundsLeft" parent="." unique_id=43662256 instance=ExtResource("14")]
 position = Vector2(-420, 70)
-rotation = 1.5707964
-scale = Vector2(7, 1)
 
-[node name="BoundsRight" parent="." unique_id=1642406532 instance=ExtResource("4")]
+[node name="BoundsRight" parent="." unique_id=1642406532 instance=ExtResource("14")]
 position = Vector2(1220, 70)
-rotation = 1.5707964
-scale = Vector2(7, 1)
 
 [node name="Enemy6" parent="." unique_id=559242830 instance=ExtResource("7")]
 position = Vector2(-273, 79)
