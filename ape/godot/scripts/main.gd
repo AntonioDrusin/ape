@@ -28,17 +28,14 @@ signal won
 var goal_types: Array[PlantData.PlantType] = []
 var goal_progress: Dictionary[PlantData.PlantType, bool] = {}
 
-@onready var intro_screen: CanvasLayer = $IntroScreen
 @onready var player: CharacterBody2D = $Player
 
 
 func _ready() -> void:
-	get_tree().paused = true
 	# "main" group membership comes from main.tscn's node definition (not
 	# add_to_group here) so it exists before any sibling's _ready() runs —
 	# GoalPanel looks Main up by group in its own _ready(), which fires
 	# before this one (children ready before parents).
-	intro_screen.start_requested.connect(_on_intro_start_requested)
 	player.water_fired.connect(_on_player_water_fired)
 	_select_goals()
 	for child in get_children():
@@ -60,10 +57,6 @@ func _select_goals() -> void:
 	for type: PlantData.PlantType in goal_types:
 		goal_progress[type] = false
 	goal_selected.emit(goal_types)
-
-
-func _on_intro_start_requested() -> void:
-	get_tree().paused = false
 
 
 func _on_seedling_seed_popped(hybrid_type: PlantData.PlantType, at_position: Vector2) -> void:

@@ -2,7 +2,7 @@ extends CanvasLayer
 
 ## Spawned by Main (Step 6) once every goal is checked. Runs while Main keeps
 ## the tree paused, so it needs PROCESS_MODE_ALWAYS to take button input and
-## play its particles/sound, the same reason intro_screen.gd sets it.
+## play its particles/sound.
 
 @onready var play_again_button: Button = $VBoxContainer/PlayAgainButton
 @onready var vbox: VBoxContainer = $VBoxContainer
