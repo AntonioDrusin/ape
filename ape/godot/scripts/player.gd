@@ -24,7 +24,6 @@ signal water_fired(position: Vector2, velocity: Vector2)
 @onready var seed_pickup_sound: AudioStreamPlayer2D = $Visual/SeedPickupSound
 @onready var seed_pickup_puff: CPUParticles2D = $Visual/SeedCarry/SeedPickupPuff
 @onready var drink_sound: AudioStreamPlayer2D = $Visual/DrinkSound
-@onready var water_sound: AudioStreamPlayer2D = $Visual/WaterSound
 @onready var goal_checked_sound: AudioStreamPlayer2D = $Visual/GoalCheckedSound
 @onready var goal_confetti: Node2D = $Visual/GoalConfetti
 ## Reuses water_pour.wav as a placeholder launch sound (no dedicated "fire"
@@ -115,13 +114,14 @@ func _physics_process(delta: float) -> void:
 		elif area.is_in_group("plot"):
 			hovered_plot = area
 
-	# Sucking: proboscis held while its tip (ProboscisSensor, not the player's
-	# body) is close enough to a water surface — you have to aim the proboscis
-	# at the water, not just fly generally near it. Independent of
-	# landed_on_water above (that's for physical resting only). The proboscis
-	# itself comes out on the button alone (holding_proboscis) so it reads as
-	# "reaching for water" even out of range; sucking gates the actual
-	# fill/shake to when that reach lands on a water surface.
+	# Sucking: automatic on proximity alone -- no button needed. Its tip
+	# (ProboscisSensor, not the player's body) has to be close enough to a
+	# water surface for the reach to land, so you still have to aim the
+	# proboscis at the water, not just fly generally near it. Independent of
+	# landed_on_water above (that's for physical resting only). Range
+	# detection works whether or not the proboscis is currently visible,
+	# since ProboscisSensor's Area2D collision doesn't depend on the
+	# Polygon2D's visible flag -- so this can gate the auto-extend below.
 	var water_surface_y: float = -INF
 	for area in proboscis_sensor.get_overlapping_areas():
 		if area.is_in_group("water"):
@@ -130,7 +130,7 @@ func _physics_process(delta: float) -> void:
 	var holding_proboscis := Input.is_action_pressed("use_proboscis")
 	var in_suck_range := water_surface_y > -INF \
 		and (water_surface_y - proboscis_sensor.global_position.y) <= tuning.water_suck_distance
-	var sucking := holding_proboscis and in_suck_range
+	var sucking := in_suck_range
 	if sucking and water_level < 1.0:
 		water_level = minf(water_level + delta / tuning.water_fill_time, 1.0)
 		water_level_changed.emit(water_level)
@@ -168,7 +168,7 @@ func _physics_process(delta: float) -> void:
 		_play_pollen_puff()
 
 	if proboscis:
-		proboscis.visible = holding_proboscis
+		proboscis.visible = sucking or holding_proboscis
 		if not holding_proboscis and _fire_pose_tween:
 			_fire_pose_tween.kill()
 			proboscis.scale = Vector2.ONE

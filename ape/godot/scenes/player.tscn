@@ -71,9 +71,6 @@ shape = SubResource("CircleShape2D_proboscis_sensor")
 [node name="DrinkSound" type="AudioStreamPlayer2D" parent="Visual"]
 stream = ExtResource("7")
 
-[node name="WaterSound" type="AudioStreamPlayer2D" parent="Visual"]
-stream = ExtResource("8")
-
 [node name="FireSound" type="AudioStreamPlayer2D" parent="Visual"]
 stream = ExtResource("8")
 
@@ -236,3 +233,4 @@ polygon = PackedVector2Array(0, 0, -22, 14, -26, 2, -8, -4)
 zoom = Vector2(1.6, 1.6)
 position_smoothing_enabled = true
 position_smoothing_speed = 6.0
+process_callback = 0
