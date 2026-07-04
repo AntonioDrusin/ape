@@ -4,13 +4,10 @@ signal water_level_changed(value: float)
 signal pollen_changed(has_pollen: bool, pollen_type: PlantData.PlantType)
 signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 
-@export var thrust: float = 900.0
-@export var gravity: float = 260.0
-@export var max_speed: float = 420.0
-@export var air_drag: float = 3.5
-@export var water_fill_time: float = 4.0
-@export var water_rest_height: float = 7.0
-@export var water_drain_time: float = 2.0
+## Flight/water knobs live in data/player_tuning.tres (see GameplayTuning) so
+## they're editable as data — swap in a different .tres for a different feel
+## without touching this script.
+@export var tuning: GameplayTuning = preload("res://data/player_tuning.tres")
 
 @onready var wings: Node2D = $Visual/Wings
 @onready var visual: Node2D = $Visual
@@ -49,15 +46,19 @@ func _physics_process(delta: float) -> void:
 	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
 	input_dir.y = Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
 
-	velocity += input_dir * thrust * delta
-	velocity.y += gravity * delta
-	velocity -= velocity * air_drag * delta
-	velocity = velocity.limit_length(max_speed)
+	velocity += input_dir * tuning.thrust * delta
+	velocity.y += tuning.gravity * delta
+	# Proportional drag (not a fixed friction constant) gives the floaty,
+	# bug-like feel rather than instant stop/start.
+	velocity -= velocity * tuning.air_drag * delta
+	velocity = velocity.limit_length(tuning.max_speed)
 
 	move_and_slide()
 
 	# Turn to face the direction of horizontal movement, smoothly flipping
-	# the visual so the bug isn't shown flying backwards. The target facing
+	# the visual so the bug isn't shown flying backwards. Only Visual flips:
+	# CollisionShape2D and Camera2D are siblings of Visual in player.tscn
+	# precisely so this never affects physics or the view. The target facing
 	# only updates once velocity is decisive, but the interpolation itself
 	# always runs so a quick direction tap can't strand the flip mid-turn
 	# once velocity decays back under the threshold from air_drag.
@@ -78,7 +79,7 @@ func _physics_process(delta: float) -> void:
 				if is_on_floor():
 					landed_on_water = true
 				else:
-					var rest_y: float = area.get_surface_y() - water_rest_height
+					var rest_y: float = area.get_surface_y() - tuning.water_rest_height
 					if global_position.y >= rest_y:
 						global_position.y = rest_y
 						velocity.y = 0.0
@@ -90,7 +91,7 @@ func _physics_process(delta: float) -> void:
 
 	var drinking := landed_on_water and input_dir.length() < INPUT_DEADZONE
 	if drinking and water_level < 1.0:
-		water_level = minf(water_level + delta / water_fill_time, 1.0)
+		water_level = minf(water_level + delta / tuning.water_fill_time, 1.0)
 		water_level_changed.emit(water_level)
 
 	# Hovering over a seedling's HoverZone waters it and drives pollen
@@ -110,7 +111,7 @@ func _physics_process(delta: float) -> void:
 
 	if hovered_seedling and water_level > 0.0:
 		hovered_seedling.water(delta)
-		water_level = maxf(water_level - delta / water_drain_time, 0.0)
+		water_level = maxf(water_level - delta / tuning.water_drain_time, 0.0)
 		water_level_changed.emit(water_level)
 
 	if hovered_seedling:
@@ -128,10 +129,7 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("shed_pollen") and has_pollen:
 		_set_pollen(false, pollen_type)
-		pollen_puff.restart()
-		pollen_puff.emitting = true
-		pollen_puff_sound.pitch_scale = randf_range(0.9, 1.1)
-		pollen_puff_sound.play()
+		_play_pollen_puff()
 
 	var watering := hovered_seedling != null and water_level > 0.0
 	if proboscis:
@@ -167,10 +165,7 @@ func _handle_pollen_hover(seedling: Node) -> void:
 			pollinate_sound.play()
 		seedling.PollinateResult.FIZZLE:
 			_set_pollen(false, pollen_type)
-			pollen_puff.restart()
-			pollen_puff.emitting = true
-			pollen_puff_sound.pitch_scale = randf_range(0.9, 1.1)
-			pollen_puff_sound.play()
+			_play_pollen_puff()
 
 
 func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
@@ -182,6 +177,15 @@ func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
 	if has_pollen:
 		pollen_blob.color = PlantData.pollen_color(pollen_type)
 	pollen_changed.emit(has_pollen, pollen_type)
+
+
+## Plays the small "pollen lost" puff + sound, shared by shedding, a fizzled
+## pollination attempt, and an enemy knocking pollen off on touch.
+func _play_pollen_puff() -> void:
+	pollen_puff.restart()
+	pollen_puff.emitting = true
+	pollen_puff_sound.pitch_scale = randf_range(0.9, 1.1)
+	pollen_puff_sound.play()
 
 
 ## Picks up a loose seed area: reads its plant_type, frees the seed node
@@ -221,6 +225,16 @@ func celebrate_goal() -> void:
 func steal_water(amount: float) -> void:
 	water_level = maxf(water_level - amount, 0.0)
 	water_level_changed.emit(water_level)
+
+
+## Called by an enemy on touch (duck-typed, mirrors steal_water()): knocks
+## the carried pollen off. No-op if not carrying any, since the enemy calls
+## this unconditionally on every touch.
+func lose_pollen() -> void:
+	if not has_pollen:
+		return
+	_set_pollen(false, pollen_type)
+	_play_pollen_puff()
 
 
 ## Fades a looping woosh's volume toward on/off rather than hard-cutting it,

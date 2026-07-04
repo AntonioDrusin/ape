@@ -22,6 +22,8 @@ var _font: Font
 func _ready() -> void:
 	_font = get_theme_default_font()
 	custom_minimum_size = Vector2(200.0, TITLE_HEIGHT + PADDING)
+	# Safe this early (a child's _ready() runs before Main's) only because
+	# Main's group membership is set in main.tscn, not via add_to_group().
 	var main: Node = get_tree().get_first_node_in_group("main")
 	if main:
 		main.goal_selected.connect(_on_goal_selected)

@@ -1,6 +1,12 @@
 @tool
 extends Node2D
 
+## Note on the HoverZone child (Area2D, group "seedling", monitorable but not
+## monitoring — it only needs to be detected, not detect): this script never
+## touches it. It exists purely as the detectable proxy the player's sensor
+## polls to know it's over this plant; all interaction logic lives on the
+## player.
+
 ## Plant lifecycle: GROWING -> BLOOMED -> POLLINATED -> SEED_GROWING -> (seed
 ## pops) -> BLOOMED. Watering drives GROWING; POLLINATED is entered by
 ## pollinate(), SEED_GROWING by watering a POLLINATED plant again.

@@ -117,7 +117,7 @@ Refactor `seedling.gd` from a bare `growth` value to an explicit lifecycle:
 
 **Testable:** grow the target set, see the win screen, restart works.
 
-### Step 7 — Enemy interference
+### Step 7 — Enemy interference [COMPLETE]
 
 - Gnat swarms now also knock the carried **pollen** off the bee on touch (in addition to stealing water). The pollen is lost — puff particle + the existing steal sound. Carried seeds are safe (losing a seed would be too punishing).
 - Add 1–2 enemies patrolling near plot clusters so late-game carrying has tension.

@@ -1,5 +1,10 @@
 extends Area2D
 
+## A loose popped seed. Passive detectable (group "seed" in the .tscn):
+## pickup logic lives entirely in the player's sensor poll, which reads
+## plant_type off this node and frees it — there is deliberately no pickup
+## code or signal here.
+
 ## The plant type this seed will grow into once planted (Step 4). Colors the
 ## seed's visual via PlantData, the single source of truth for plant data.
 @export var plant_type: PlantData.PlantType = PlantData.PlantType.NONE
@@ -16,8 +21,8 @@ func _ready() -> void:
 	_play_pop_in()
 
 
-## First use of create_tween() in this codebase — a short arc-with-a-bounce
-## entrance (REQUIREMENTS.md fit-and-finish: 0.15-0.4s, "nothing snaps").
+## A short arc-with-a-bounce entrance (REQUIREMENTS.md fit-and-finish:
+## 0.15-0.4s, "nothing snaps").
 ## Arcs to one side and up, then lands with a bounce ease at the original
 ## spot, so the seed reads as having just popped out of the plant beside it.
 func _play_pop_in() -> void:

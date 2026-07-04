@@ -164,6 +164,12 @@ position = Vector2(383, -127)
 [node name="Enemy8" parent="." unique_id=776101015 instance=ExtResource("7")]
 position = Vector2(812, -104)
 
+[node name="Enemy9" parent="." unique_id=555111222 instance=ExtResource("7")]
+position = Vector2(710, -250)
+
+[node name="Enemy10" parent="." unique_id=555111333 instance=ExtResource("7")]
+position = Vector2(820, 380)
+
 [node name="Platform9" parent="." unique_id=1988330634 instance=ExtResource("1")]
 position = Vector2(401, -76)
 scale = Vector2(0.6, 0.5)
