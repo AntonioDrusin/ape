@@ -227,6 +227,41 @@ polygon = PackedVector2Array(-4, -10, -6, -13, -4, -16, -2, -13)
 color = Color(0.75, 0.1, 0.2, 1)
 polygon = PackedVector2Array(4, -13, 2, -16, 4, -19, 6, -16)
 
+[node name="PollenRays" type="Node2D" parent="Bloom"]
+position = Vector2(0, -17)
+
+[node name="Ray1" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(-1.0, -2.0, 1.0, -2.0, 0.0, -9.0)
+
+[node name="Ray2" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(0.71, -2.12, 2.12, -0.71, 6.36, -6.36)
+
+[node name="Ray3" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(2.0, -1.0, 2.0, 1.0, 9.0, -0.0)
+
+[node name="Ray4" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(2.12, 0.71, 0.71, 2.12, 6.36, 6.36)
+
+[node name="Ray5" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(1.0, 2.0, -1.0, 2.0, 0.0, 9.0)
+
+[node name="Ray6" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(-0.71, 2.12, -2.12, 0.71, -6.36, 6.36)
+
+[node name="Ray7" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(-2.0, 1.0, -2.0, -1.0, -9.0, 0.0)
+
+[node name="Ray8" type="Polygon2D" parent="Bloom/PollenRays"]
+color = Color(1, 0.98, 0.85, 0.45)
+polygon = PackedVector2Array(-2.12, -0.71, -0.71, -2.12, -6.36, -6.36)
+
 [node name="PollenCue" type="Node2D" parent="Bloom"]
 
 [node name="Dot1Border" type="Polygon2D" parent="Bloom/PollenCue"]

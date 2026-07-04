@@ -25,6 +25,8 @@ signal bloomed(bloom_type: PlantData.PlantType)
 
 const MIN_SCALE: float = 0.12
 const BLOOM_START: float = 70.0
+const RAY_SPIN_RATE: float = 0.6 # radians/sec, continuous rotation
+const RAY_PULSE_RATE: float = 2.5 # radians/sec, feeds the sin() for the +-20% scale pulse
 
 ## Result of a pollinate() call: whether the incoming pollen produced a
 ## hybrid or fizzled. Same-type pollination is filtered out by the caller
@@ -35,11 +37,7 @@ var state: State = State.GROWING:
 	set(value):
 		var entering_bloom: bool = value == State.BLOOMED and state != State.BLOOMED
 		state = value
-		# The POLLINATED shimmer is only animated during actual gameplay —
-		# gating set_process on the editor hint keeps the @tool preview
-		# static (like growth/bloom_type already are) instead of animating
-		# inside the editor.
-		set_process(state == State.POLLINATED and not Engine.is_editor_hint())
+		set_process(_should_animate())
 		_update_visuals()
 		if entering_bloom and not Engine.is_editor_hint():
 			bloomed.emit(bloom_type)
@@ -62,6 +60,7 @@ var seed_progress: float = 0.0:
 			_update_visuals()
 
 var _shimmer_t: float = 0.0
+var _ray_t: float = 0.0
 
 ## Progress through the GROWING state; kept exported so instances in the level
 ## can start part-grown and the @tool preview stays live in the editor.
@@ -85,11 +84,13 @@ var _shimmer_t: float = 0.0
 @export var bloom_type: PlantData.PlantType = PlantData.PlantType.DAISY:
 	set(value):
 		bloom_type = value
+		set_process(_should_animate())
 		_update_visuals()
 
 @onready var bud: Polygon2D = $Sprout/Bud
 @onready var bloom: Node2D = $Bloom
 @onready var pollen_cue: Node2D = $Bloom/PollenCue
+@onready var pollen_rays: Node2D = $Bloom/PollenRays
 @onready var sparkle: CPUParticles2D = $Bloom/Sparkle
 @onready var seed_pod: Polygon2D = $Bloom/SeedPod
 @onready var seed_pop_puff: CPUParticles2D = $SeedPopPuff
@@ -118,6 +119,18 @@ func _ready() -> void:
 	# Instances that keep the default growth value never run its setter, so
 	# derive the starting state here instead of trusting the default.
 	state = State.BLOOMED if growth >= 100.0 else State.GROWING
+
+
+## Whether _process should be running: the POLLINATED shimmer and the
+## pollen-ray spin/pulse are the only two animated (non-editor-preview)
+## visuals, so this is their combined gate. Kept as one helper so the state
+## and bloom_type setters (accepts_pollen depends on both) can't drift apart
+## on what "should animate" means. Animation always stays off in the editor,
+## matching how growth/bloom_type already preview statically.
+func _should_animate() -> bool:
+	if Engine.is_editor_hint():
+		return false
+	return state == State.POLLINATED or (state == State.BLOOMED and PlantData.accepts_pollen(bloom_type))
 
 
 ## Same hover-and-drain mechanic as growing (see player.gd's watering poll) —
@@ -177,8 +190,13 @@ func _pop_seed() -> void:
 
 
 func _process(delta: float) -> void:
-	_shimmer_t += delta
-	bloom.modulate = Color(1.0, 1.0, 1.0) * (1.0 + 0.15 * sin(_shimmer_t * 4.0))
+	if state == State.POLLINATED:
+		_shimmer_t += delta
+		bloom.modulate = Color(1.0, 1.0, 1.0) * (1.0 + 0.15 * sin(_shimmer_t * 4.0))
+	if pollen_rays.visible:
+		_ray_t += delta
+		pollen_rays.rotation += RAY_SPIN_RATE * delta
+		pollen_rays.scale = Vector2.ONE * (1.0 + 0.2 * sin(_ray_t * RAY_PULSE_RATE))
 
 
 ## Every visual is a function of (state, progress, bloom_type) — no visual
@@ -195,10 +213,15 @@ func _update_visuals() -> void:
 		_blooms[type].visible = type == bloom_type
 	var offers_pollen: bool = state == State.BLOOMED and PlantData.accepts_pollen(bloom_type)
 	pollen_cue.visible = offers_pollen
+	pollen_rays.visible = offers_pollen
 	if offers_pollen:
 		var pollen_color: Color = PlantData.pollen_color(bloom_type)
 		for dot: Polygon2D in _pollen_dots:
 			dot.color = pollen_color
+	else:
+		pollen_rays.rotation = 0.0
+		pollen_rays.scale = Vector2.ONE
+		_ray_t = 0.0
 	sparkle.emitting = state == State.POLLINATED
 	if state != State.POLLINATED:
 		bloom.modulate = Color(1.0, 1.0, 1.0)
