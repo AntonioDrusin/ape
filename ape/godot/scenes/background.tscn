@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/cloud.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/pine_tree.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/parallax_autoscroll.gd" id="3"]
 
 [node name="Background" type="ParallaxBackground"]
 
@@ -48,9 +49,41 @@ polygon = PackedVector2Array(-200, 365, 950, 365, 950, 410, -200, 410)
 color = Color(0.72, 0.9, 0.97, 1)
 polygon = PackedVector2Array(-200, 410, 950, 410, 950, 600, -200, 600)
 
+[node name="CloudsFar" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.1, 0.1)
+motion_mirroring = Vector2(900, 0)
+script = ExtResource("3")
+scroll_speed = 6.0
+
+[node name="Cloud1" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(30, 25)
+scale = Vector2(0.35, 0.35)
+
+[node name="Cloud2" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(180, 70)
+scale = Vector2(0.45, 0.45)
+
+[node name="Cloud3" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(360, 30)
+scale = Vector2(0.3, 0.3)
+
+[node name="Cloud4" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(540, 85)
+scale = Vector2(0.4, 0.4)
+
+[node name="Cloud5" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(690, 40)
+scale = Vector2(0.3, 0.3)
+
+[node name="Cloud6" parent="CloudsFar" instance=ExtResource("1")]
+position = Vector2(830, 95)
+scale = Vector2(0.5, 0.5)
+
 [node name="Clouds" type="ParallaxLayer" parent="."]
 motion_scale = Vector2(0.2, 0.2)
 motion_mirroring = Vector2(900, 0)
+script = ExtResource("3")
+scroll_speed = 14.0
 
 [node name="Cloud1" parent="Clouds" instance=ExtResource("1")]
 position = Vector2(60, 45)
