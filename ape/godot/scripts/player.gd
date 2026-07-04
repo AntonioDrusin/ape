@@ -14,6 +14,7 @@ signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 @onready var proboscis: Node2D = $Visual/Proboscis
 @onready var water_drip: CPUParticles2D = $Visual/Proboscis/WaterDrip
 @onready var water_sensor: Area2D = $WaterSensor
+@onready var proboscis_sensor: Area2D = $Visual/Proboscis/ProboscisSensor
 @onready var pollen_blob: Polygon2D = $Visual/PollenBlob
 @onready var pollen_collect_sound: AudioStreamPlayer2D = $Visual/PollenCollectSound
 @onready var pollinate_sound: AudioStreamPlayer2D = $Visual/PollinateSound
@@ -41,6 +42,7 @@ var has_seed: bool = false
 var seed_type: PlantData.PlantType = PlantData.PlantType.DAISY
 var _drink_volume: float = 0.0
 var _water_volume: float = 0.0
+var _proboscis_shake_phase: float = 0.0
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -93,15 +95,9 @@ func _physics_process(delta: float) -> void:
 	if wings:
 		wings.flapping = input_dir.length() > INPUT_DEADZONE or (not is_on_floor() and not landed_on_water)
 
-	var drinking := landed_on_water and input_dir.length() < INPUT_DEADZONE
-	if drinking and water_level < 1.0:
-		water_level = minf(water_level + delta / tuning.water_fill_time, 1.0)
-		water_level_changed.emit(water_level)
-
 	# Hovering over a seedling's HoverZone waters it and drives pollen
 	# interactions; overlapping a loose seed or an empty plot drives seed
-	# carrying/planting — same sensor used for water detection since all of
-	# this is just "what's the bug currently over."
+	# carrying/planting — same body-centered sensor, all "what's the bug over."
 	var hovered_seedling: Node = null
 	var hovered_seed: Area2D = null
 	var hovered_plot: Area2D = null
@@ -112,6 +108,26 @@ func _physics_process(delta: float) -> void:
 			hovered_seed = area
 		elif area.is_in_group("plot"):
 			hovered_plot = area
+
+	# Sucking: proboscis held while its tip (ProboscisSensor, not the player's
+	# body) is close enough to a water surface — you have to aim the proboscis
+	# at the water, not just fly generally near it. Independent of
+	# landed_on_water above (that's for physical resting only). The proboscis
+	# itself comes out on the button alone (holding_proboscis) so it reads as
+	# "reaching for water" even out of range; sucking gates the actual
+	# fill/shake to when that reach lands on a water surface.
+	var water_surface_y: float = -INF
+	for area in proboscis_sensor.get_overlapping_areas():
+		if area.is_in_group("water"):
+			water_surface_y = area.get_surface_y()
+			break
+	var holding_proboscis := Input.is_action_pressed("use_proboscis")
+	var in_suck_range := water_surface_y > -INF \
+		and (water_surface_y - proboscis_sensor.global_position.y) <= tuning.water_suck_distance
+	var sucking := holding_proboscis and in_suck_range
+	if sucking and water_level < 1.0:
+		water_level = minf(water_level + delta / tuning.water_fill_time, 1.0)
+		water_level_changed.emit(water_level)
 
 	if hovered_seedling and water_level > 0.0:
 		hovered_seedling.water(delta)
@@ -137,11 +153,17 @@ func _physics_process(delta: float) -> void:
 
 	var watering := hovered_seedling != null and water_level > 0.0
 	if proboscis:
-		proboscis.visible = drinking or watering
+		proboscis.visible = holding_proboscis
+		if sucking:
+			_proboscis_shake_phase += tuning.proboscis_shake_speed * delta
+			proboscis.position.x = sin(_proboscis_shake_phase) * tuning.proboscis_shake_amplitude
+		else:
+			_proboscis_shake_phase = 0.0
+			proboscis.position.x = 0.0
 	if water_drip:
 		water_drip.emitting = watering
 
-	_drink_volume = _update_loop_sound(drink_sound, drinking, _drink_volume, delta)
+	_drink_volume = _update_loop_sound(drink_sound, sucking, _drink_volume, delta)
 	_water_volume = _update_loop_sound(water_sound, watering, _water_volume, delta)
 
 

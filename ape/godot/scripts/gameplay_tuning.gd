@@ -17,6 +17,13 @@ class_name GameplayTuning
 @export var water_rest_height: float = 7.0
 @export var water_drain_time: float = 2.0
 
+## Step 2+: proboscis suck range and shake feedback. Amplitude/speed are raw
+## pixels/radians-per-second so tuning is a direct Inspector slider.
+@export_group("Proboscis")
+@export var water_suck_distance: float = 24.0
+@export var proboscis_shake_amplitude: float = 3.6  ## ~30% of Proboscis polygon width (12px, see player.tscn)
+@export var proboscis_shake_speed: float = 54.0     ## radians/sec of the shake sine phase
+
 ## Multiplies max_speed while carrying a seed, for a slight "heaviness" cue
 ## (REQUIREMENTS.md fit-and-finish). Set to 1.0 to disable if it frustrates
 ## more than it adds.

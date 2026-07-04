@@ -66,7 +66,7 @@ The new version:
 
 ## Incremental build steps
 
-### Step 1 — Free Space from `move_up`
+### Step 1 — Free Space from `move_up` — Done
 
 - In `project.godot`'s `[input]` section, remove the Space `InputEventKey`
   from the `move_up` action (keep W and Up-arrow).
@@ -76,7 +76,7 @@ The new version:
 **Testable:** flying up only works via W/Up-arrow; Space no longer flies,
 does nothing else yet.
 
-### Step 2 — Manual sucking (replaces automatic drinking)
+### Step 2 — Manual sucking (replaces automatic drinking) — Done
 
 - In `player.gd`, remove the automatic `drinking` fill (currently: landed on
   water + no directional input → fill every frame). Replace with: sucking is
