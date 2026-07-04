@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[node name="PineTree" type="Node2D"]
+
+[node name="Trunk" type="Polygon2D" parent="."]
+color = Color(0.33, 0.26, 0.19, 1)
+polygon = PackedVector2Array(-6, -30, 6, -30, 6, 0, -6, 0)
+
+[node name="Tier1" type="Polygon2D" parent="."]
+color = Color(0.14, 0.29, 0.17, 1)
+polygon = PackedVector2Array(-40, -30, 40, -30, 0, -75)
+
+[node name="Tier2" type="Polygon2D" parent="."]
+color = Color(0.18, 0.35, 0.2, 1)
+polygon = PackedVector2Array(-32, -55, 32, -55, 0, -98)
+
+[node name="Tier3" type="Polygon2D" parent="."]
+color = Color(0.21, 0.41, 0.23, 1)
+polygon = PackedVector2Array(-22, -82, 22, -82, 0, -122)

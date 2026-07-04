@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[node name="Cloud" type="Node2D"]
+
+[node name="Left" type="Polygon2D" parent="."]
+position = Vector2(-30, 6)
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(24, 0, 22.2, 9.2, 17, 17, 9.2, 22.2, 0, 24, -9.2, 22.2, -17, 17, -22.2, 9.2, -24, 0, -22.2, -9.2, -17, -17, -9.2, -22.2, 0, -24, 9.2, -22.2, 17, -17, 22.2, -9.2)
+
+[node name="Right" type="Polygon2D" parent="."]
+position = Vector2(32, 4)
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(26, 0, 24, 10, 18.4, 18.4, 10, 24, 0, 26, -10, 24, -18.4, 18.4, -24, 10, -26, 0, -24, -10, -18.4, -18.4, -10, -24, 0, -26, 10, -24, 18.4, -18.4, 24, -10)
+
+[node name="Center" type="Polygon2D" parent="."]
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(34, 0, 31.4, 13, 24, 24, 13, 31.4, 0, 34, -13, 31.4, -24, 24, -31.4, 13, -34, 0, -31.4, -13, -24, -24, -13, -31.4, 0, -34, 13, -31.4, 24, -24, 31.4, -13)

@@ -1,0 +1,107 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/cloud.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/pine_tree.tscn" id="2"]
+
+[node name="Background" type="ParallaxBackground"]
+
+[node name="Sky" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0, 0)
+
+[node name="Band1" type="Polygon2D" parent="Sky"]
+color = Color(0.3, 0.55, 0.85, 1)
+polygon = PackedVector2Array(-200, -150, 950, -150, 950, 50, -200, 50)
+
+[node name="Band2" type="Polygon2D" parent="Sky"]
+color = Color(0.35, 0.59, 0.86, 1)
+polygon = PackedVector2Array(-200, 50, 950, 50, 950, 95, -200, 95)
+
+[node name="Band3" type="Polygon2D" parent="Sky"]
+color = Color(0.39, 0.63, 0.88, 1)
+polygon = PackedVector2Array(-200, 95, 950, 95, 950, 140, -200, 140)
+
+[node name="Band4" type="Polygon2D" parent="Sky"]
+color = Color(0.44, 0.67, 0.89, 1)
+polygon = PackedVector2Array(-200, 140, 950, 140, 950, 185, -200, 185)
+
+[node name="Band5" type="Polygon2D" parent="Sky"]
+color = Color(0.49, 0.71, 0.9, 1)
+polygon = PackedVector2Array(-200, 185, 950, 185, 950, 230, -200, 230)
+
+[node name="Band6" type="Polygon2D" parent="Sky"]
+color = Color(0.53, 0.74, 0.92, 1)
+polygon = PackedVector2Array(-200, 230, 950, 230, 950, 275, -200, 275)
+
+[node name="Band7" type="Polygon2D" parent="Sky"]
+color = Color(0.58, 0.78, 0.93, 1)
+polygon = PackedVector2Array(-200, 275, 950, 275, 950, 320, -200, 320)
+
+[node name="Band8" type="Polygon2D" parent="Sky"]
+color = Color(0.63, 0.82, 0.94, 1)
+polygon = PackedVector2Array(-200, 320, 950, 320, 950, 365, -200, 365)
+
+[node name="Band9" type="Polygon2D" parent="Sky"]
+color = Color(0.67, 0.86, 0.96, 1)
+polygon = PackedVector2Array(-200, 365, 950, 365, 950, 410, -200, 410)
+
+[node name="Band10" type="Polygon2D" parent="Sky"]
+color = Color(0.72, 0.9, 0.97, 1)
+polygon = PackedVector2Array(-200, 410, 950, 410, 950, 600, -200, 600)
+
+[node name="Clouds" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(900, 0)
+
+[node name="Cloud1" parent="Clouds" instance=ExtResource("1")]
+position = Vector2(60, 45)
+
+[node name="Cloud2" parent="Clouds" instance=ExtResource("1")]
+position = Vector2(280, 105)
+scale = Vector2(0.8, 0.8)
+
+[node name="Cloud3" parent="Clouds" instance=ExtResource("1")]
+position = Vector2(520, 60)
+scale = Vector2(1.3, 1.3)
+
+[node name="Cloud4" parent="Clouds" instance=ExtResource("1")]
+position = Vector2(750, 115)
+scale = Vector2(0.9, 0.9)
+
+[node name="Trees" type="ParallaxLayer" parent="."]
+motion_scale = Vector2(0.6, 0.6)
+motion_mirroring = Vector2(840, 0)
+
+[node name="Soil" type="Polygon2D" parent="Trees"]
+color = Color(0.36, 0.32, 0.26, 1)
+polygon = PackedVector2Array(0, 318, 840, 318, 840, 600, 0, 600)
+
+[node name="Grass" type="Polygon2D" parent="Trees"]
+color = Color(0.35, 0.48, 0.3, 1)
+polygon = PackedVector2Array(0, 318, 840, 318, 840, 338, 0, 338)
+
+[node name="Tree1" parent="Trees" instance=ExtResource("2")]
+position = Vector2(20, 322)
+scale = Vector2(1.4, 1.4)
+
+[node name="Tree2" parent="Trees" instance=ExtResource("2")]
+position = Vector2(130, 330)
+
+[node name="Tree3" parent="Trees" instance=ExtResource("2")]
+position = Vector2(265, 318)
+scale = Vector2(1.6, 1.6)
+
+[node name="Tree4" parent="Trees" instance=ExtResource("2")]
+position = Vector2(380, 332)
+scale = Vector2(0.9, 0.9)
+
+[node name="Tree5" parent="Trees" instance=ExtResource("2")]
+position = Vector2(490, 324)
+scale = Vector2(1.3, 1.3)
+
+[node name="Tree6" parent="Trees" instance=ExtResource("2")]
+position = Vector2(620, 328)
+scale = Vector2(1.1, 1.1)
+
+[node name="Tree7" parent="Trees" instance=ExtResource("2")]
+position = Vector2(740, 320)
+scale = Vector2(1.5, 1.5)
