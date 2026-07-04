@@ -11,3 +11,4 @@ air_drag = 3.5
 water_fill_time = 3.0
 water_rest_height = 7.0
 water_drain_time = 4.0
+seed_carry_speed_multiplier = 0.9

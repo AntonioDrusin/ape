@@ -27,7 +27,7 @@ Every scene and script follows these; deviate deliberately and say why in a comm
 2. **Passive detectables, one sensor poll.** Everything the bug interacts with in the world (`water`, a seedling's `HoverZone`, `seed`, `plot` — group names match the scene) is an `Area2D` that knows nothing about the player. The player's `WaterSensor` polls overlaps once per physics tick and owns all interaction logic; a detectable at most exposes a method or property for the player to call.
 3. **UI reaches into gameplay, never the reverse.** HUD elements find `player`/`main` via groups and connect to their signals; gameplay scripts stay UI-agnostic. Each HUD panel is self-contained — its own script, its own toggle input — independent of its siblings.
 4. **`PlantData` is the single source of truth for plant facts** (types, colors, combos, display names). Gameplay and UI both read from it; nothing else may hardcode plant data. UI content is *generated* from it (the combo chart builds rows from `PlantData.all_combos()`, icons are extracted from `seedling.tscn` via `PlantIconSource`) rather than hand-authored copies that could drift.
-5. **Feedback conventions.** `CPUParticles2D` only — the GL Compatibility renderer has no GPU particles. One-shot SFX get slight `pitch_scale` randomization per play; looping SFX are volume-faded in/out, never hard play/stopped. Visuals are a pure function of state (`_update_visuals()`-style, no visual state stored elsewhere), and transitions animate briefly (~0.15–0.4s — "nothing snaps", per REQUIREMENTS.md).
+5. **Feedback conventions.** `CPUParticles2D` only — the GL Compatibility renderer has no GPU particles. One-shot SFX get slight `pitch_scale` randomization per play; looping SFX are volume-faded in/out, never hard play/stopped. Visuals are a pure function of state (`_update_visuals()`-style, no visual state stored elsewhere), and transitions animate briefly (~0.15–0.4s — "nothing snaps", per GAMEPLAY.md).
 
 ## Scene catalog
 
@@ -48,7 +48,6 @@ Orientation only — read the `.tscn`/`.gd` for detail.
 
 ## Known gaps / not yet built
 
-- The pollination game (REQUIREMENTS.md) is at Step 7 of 8: the full core loop is playable end to end and winnable — bloom, pollinate, water to pop a seed, carry it, plant it, bloom the hybrid, complete all 4 goal plants for the win overlay. Enemies now also knock pollen off the bee on touch. Still missing: the fit-and-finish pass (Step 8).
 - No level-transition or scoring beyond the single win condition — nothing consumes `water_level` besides watering, and there's no losing state (Step 7's enemies are pressure, not failure).
 - No save/settings system.
 - Input actions are defined by hand in `project.godot`; there is no in-game rebinding UI.

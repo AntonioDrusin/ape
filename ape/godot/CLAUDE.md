@@ -4,7 +4,7 @@ A 2D Godot game (side-view, platformer-style) where the player controls a flying
 
 - Architecture, scene tree layout, and system responsibilities: see [ARCHITECTURE.md](ARCHITECTURE.md).
 - Coding conventions and practices to follow when writing GDScript or scenes: see [CODING.md](CODING.md).
-- Planned gameplay features and the incremental build plan for them: see [REQUIREMENTS.md](REQUIREMENTS.md).
+- Gameplay direction and feel — what the game is and how it should play: see [GAMEPLAY.md](GAMEPLAY.md).
 
 Keep ARCHITECTURE.md in sync with the code: update its Patterns section and scene catalog when scenes/systems are added, moved, renamed, or change role. Detail deliberately does *not* live in docs — node structure, signal signatures, and tuning values live only in the `.tscn`/`.gd` files, and rationale lives as a script comment at the line a future edit would break (see "Where information lives" in ARCHITECTURE.md). There are no per-scene doc files; don't create them.
 

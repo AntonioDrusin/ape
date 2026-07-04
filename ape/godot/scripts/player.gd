@@ -31,6 +31,7 @@ const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
 const SFX_LOOP_VOLUME_DB := -1.0
 const SFX_FADE_SPEED := 6.0
+const CARRY_POP_DURATION := 0.18
 
 var water_level: float = 0.0
 var facing_x: float = 1.0
@@ -51,7 +52,10 @@ func _physics_process(delta: float) -> void:
 	# Proportional drag (not a fixed friction constant) gives the floaty,
 	# bug-like feel rather than instant stop/start.
 	velocity -= velocity * tuning.air_drag * delta
-	velocity = velocity.limit_length(tuning.max_speed)
+	# Carrying a seed adds a slight heaviness (REQUIREMENTS.md fit-and-finish);
+	# tune seed_carry_speed_multiplier to 1.0 in player_tuning.tres to cut it.
+	var speed_limit := tuning.max_speed * (tuning.seed_carry_speed_multiplier if has_seed else 1.0)
+	velocity = velocity.limit_length(speed_limit)
 
 	move_and_slide()
 
@@ -176,6 +180,7 @@ func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
 	pollen_blob.visible = has_pollen
 	if has_pollen:
 		pollen_blob.color = PlantData.pollen_color(pollen_type)
+		_play_carry_pop(pollen_blob)
 	pollen_changed.emit(has_pollen, pollen_type)
 
 
@@ -208,7 +213,18 @@ func _set_seed(carrying: bool, type: PlantData.PlantType) -> void:
 	seed_carry.visible = has_seed
 	if has_seed:
 		seed_carry.color = PlantData.seed_color(seed_type)
+		_play_carry_pop(seed_carry)
 	seed_changed.emit(has_seed, seed_type)
+
+
+## Scale-pops a carry indicator in from zero, shared by pollen pickup and seed
+## pickup so both cues appear with the same brief "nothing snaps" beat rather
+## than an instant visibility flip.
+func _play_carry_pop(node: Node2D) -> void:
+	node.scale = Vector2.ZERO
+	var tween: Tween = create_tween()
+	tween.tween_property(node, "scale", Vector2.ONE, CARRY_POP_DURATION) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 ## Fired by Main when a goal plant reaches full bloom (Step 6): a big multi-

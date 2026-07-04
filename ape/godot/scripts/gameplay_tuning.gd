@@ -16,3 +16,9 @@ class_name GameplayTuning
 @export var water_fill_time: float = 4.0
 @export var water_rest_height: float = 7.0
 @export var water_drain_time: float = 2.0
+
+## Multiplies max_speed while carrying a seed, for a slight "heaviness" cue
+## (REQUIREMENTS.md fit-and-finish). Set to 1.0 to disable if it frustrates
+## more than it adds.
+@export_group("Seed carrying")
+@export_range(0.5, 1.0) var seed_carry_speed_multiplier: float = 0.9
