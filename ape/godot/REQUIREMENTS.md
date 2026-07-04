@@ -57,7 +57,7 @@ the game yourself) and update ARCHITECTURE.md before moving on.
 
 ## Incremental build steps
 
-### Step 1 — Guard scene, patrol only
+### Step 1 — Guard scene, patrol only (COMPLETED)
 
 - New scene `scenes/flower_guard.tscn` + `scripts/flower_guard.gd`. Unlike
   `enemy.tscn`'s random leash-wander, the guard's patrol is a deterministic
