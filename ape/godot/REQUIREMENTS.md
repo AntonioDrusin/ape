@@ -59,10 +59,16 @@ the game yourself) and update ARCHITECTURE.md before moving on.
 
 ### Step 1 — Guard scene, patrol only
 
-- New scene `scenes/flower_guard.tscn` + `scripts/flower_guard.gd`, modeled
-  on `enemy.tscn`'s leash-patrol movement (wander within a radius of its
-  spawn point, constant idle spin/buzz visual). No aggro, no notice range,
-  no touch effect yet — it's just a visible thing drifting near a flower.
+- New scene `scenes/flower_guard.tscn` + `scripts/flower_guard.gd`. Unlike
+  `enemy.tscn`'s random leash-wander, the guard's patrol is a deterministic
+  circle around the flower it's assigned to guard (`guarded_flower`, a
+  sibling-node reference set in `main.tscn`, per the scene-level-association
+  direction below) — constant orbit radius/speed. Unlike the gnat's
+  constant idle spin, the guard's visual stays level/horizontal at all
+  times, but flips (smoothly, mirroring `player.gd`'s facing flip) when its
+  direction of travel around the circle changes, and its wings flap
+  continuously (reuses `wings.gd`, same as the player). No aggro, no notice
+  range, no touch effect yet — it's just a visible thing circling a flower.
 - Placed once in `main.tscn` near a single flower cluster for testing.
 
 **Testable:** a new hazard patrols visibly near a flower and does nothing
