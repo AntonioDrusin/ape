@@ -40,9 +40,14 @@ The new version:
 
 ## Explicit design decisions (don't re-ask these)
 
-- One droplet per Space press (`is_action_just_pressed`), not hold-to-spray.
-  Each shot costs a fixed, discrete amount of tank water — makes firing
-  a real decision instead of a hose you leave running.
+- **Hold-to-spray**, not one-shot-per-press: while Space is held, the bug is
+  *not* in suck range, and `water_level > 0.0`, a droplet fires roughly
+  every `tuning.droplet_fire_interval` (~0.3s placeholder, confirmed/tuned
+  in Step 5). Each droplet's forward speed is randomly jittered by
+  `tuning.droplet_forward_speed_jitter` so repeated shots aren't identical
+  and a sustained press reads as a spray. Each shot still costs a fixed
+  `tuning.water_per_shot` from the tank, so firing remains a real resource
+  decision (how long to hold), not a free hose.
 - Sucking is the opposite: continuous while held (`is_action_pressed`) and
   in range, matching how drinking already feels today.
 - Whichever behavior applies is purely proximity-driven off the same press:
@@ -97,7 +102,7 @@ does nothing else yet.
 and shake while the tank fills; letting go or drifting away stops it. Space
 away from water does nothing yet.
 
-### Step 3 — Fire a real water droplet
+### Step 3 — Fire a real water droplet — Done
 
 - New scene `scenes/water_droplet.tscn` + `scripts/water_droplet.gd`: a
   small `Area2D` (monitoring, not monitorable — mirrors the "active
@@ -106,8 +111,9 @@ away from water does nothing yet.
   `position += velocity * delta`. Despawns (`queue_free`) after a max
   lifetime or once it leaves the playable area — whichever is simpler to
   wire against the existing camera/level bounds.
-- In `player.gd`: on `Input.is_action_just_pressed("use_proboscis")` when
-  *not* in suck range and `water_level > 0.0`, emit a new signal
+- In `player.gd`: while `Input.is_action_pressed("use_proboscis")`, *not* in
+  suck range, and `water_level > 0.0`, fire one droplet every
+  `tuning.droplet_fire_interval` (hold-to-spray) by emitting a new signal
   `water_fired(position: Vector2, velocity: Vector2)` from the proboscis
   tip, where `velocity = velocity + Vector2(facing_x * tuning.droplet_forward_speed, 0.0)`
   (player's current velocity plus a forward kick in the facing direction),
@@ -117,7 +123,7 @@ away from water does nothing yet.
   enlargement flares only the tip/bottom (the emitting end), not the whole
   shape uniformly, since that's what would actually happen to something
   squirting water — but a uniform scale-up is an acceptable first-pass
-  approximation; refine to a flare (e.g. scaling a bottom-anchored tip
+  approximation; refine to a flare (e.g., scaling a bottom-anchored tip
   sub-node, or a non-uniform scale weighted toward the tip) in Step 5 if the
   uniform version doesn't read well. Also play a launch sound.
 - In `main.gd`: connect to the player's `water_fired` signal (Pattern 1 —

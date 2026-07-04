@@ -90,6 +90,9 @@ stream = ExtResource("7")
 [node name="WaterSound" type="AudioStreamPlayer2D" parent="Visual"]
 stream = ExtResource("8")
 
+[node name="FireSound" type="AudioStreamPlayer2D" parent="Visual"]
+stream = ExtResource("8")
+
 [node name="PollenBlob" type="Polygon2D" parent="Visual"]
 visible = false
 polygon = PackedVector2Array(-14, -5, -19, 0, -14, 5, -9, 0)

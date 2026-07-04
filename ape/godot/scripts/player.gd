@@ -3,6 +3,7 @@ extends CharacterBody2D
 signal water_level_changed(value: float)
 signal pollen_changed(has_pollen: bool, pollen_type: PlantData.PlantType)
 signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
+signal water_fired(position: Vector2, velocity: Vector2)
 
 ## Flight/water knobs live in data/player_tuning.tres (see GameplayTuning) so
 ## they're editable as data — swap in a different .tres for a different feel
@@ -27,12 +28,17 @@ signal seed_changed(has_seed: bool, seed_type: PlantData.PlantType)
 @onready var water_sound: AudioStreamPlayer2D = $Visual/WaterSound
 @onready var goal_checked_sound: AudioStreamPlayer2D = $Visual/GoalCheckedSound
 @onready var goal_confetti: Node2D = $Visual/GoalConfetti
+## Reuses water_pour.wav as a placeholder launch sound (no dedicated "fire"
+## clip exists yet) -- Step 5 plans a distinct one-shot for this.
+@onready var fire_sound: AudioStreamPlayer2D = $Visual/FireSound
 
 const FACING_TURN_SPEED := 12.0
 const INPUT_DEADZONE := 0.1
 const SFX_LOOP_VOLUME_DB := -1.0
 const SFX_FADE_SPEED := 6.0
 const CARRY_POP_DURATION := 0.18
+const FIRE_POSE_SCALE := 1.35
+const FIRE_POSE_DURATION := 0.12
 
 var water_level: float = 0.0
 var facing_x: float = 1.0
@@ -43,6 +49,8 @@ var seed_type: PlantData.PlantType = PlantData.PlantType.DAISY
 var _drink_volume: float = 0.0
 var _water_volume: float = 0.0
 var _proboscis_shake_phase: float = 0.0
+var _fire_cooldown: float = 0.0
+var _fire_pose_tween: Tween
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Vector2.ZERO
@@ -129,6 +137,21 @@ func _physics_process(delta: float) -> void:
 		water_level = minf(water_level + delta / tuning.water_fill_time, 1.0)
 		water_level_changed.emit(water_level)
 
+	# Firing: hold-to-spray, gated purely on the same proximity check as
+	# sucking above (near water -> sucks; away from it -> fires; no separate
+	# mode-switch input). Resetting the cooldown to 0 whenever the gate is
+	# false means the first eligible frame -- a fresh press, or drifting out
+	# of suck range mid-hold -- always fires immediately, then repeats every
+	# tuning.droplet_fire_interval for as long as the button/conditions hold.
+	var can_fire := holding_proboscis and not in_suck_range and water_level > 0.0
+	if can_fire:
+		_fire_cooldown -= delta
+		if _fire_cooldown <= 0.0:
+			_fire_droplet()
+			_fire_cooldown = tuning.droplet_fire_interval
+	else:
+		_fire_cooldown = 0.0
+
 	if hovered_seedling and water_level > 0.0:
 		hovered_seedling.water(delta)
 		water_level = maxf(water_level - delta / tuning.water_drain_time, 0.0)
@@ -154,6 +177,9 @@ func _physics_process(delta: float) -> void:
 	var watering := hovered_seedling != null and water_level > 0.0
 	if proboscis:
 		proboscis.visible = holding_proboscis
+		if not holding_proboscis and _fire_pose_tween:
+			_fire_pose_tween.kill()
+			proboscis.scale = Vector2.ONE
 		if sucking:
 			_proboscis_shake_phase += tuning.proboscis_shake_speed * delta
 			proboscis.position.x = sin(_proboscis_shake_phase) * tuning.proboscis_shake_amplitude
@@ -247,6 +273,40 @@ func _play_carry_pop(node: Node2D) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(node, "scale", Vector2.ONE, CARRY_POP_DURATION) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## Fires one water droplet from the proboscis tip: emits water_fired for Main
+## to spawn (pattern 1 -- the player never instantiates world scenes itself),
+## drains a fixed cost regardless of the jittered velocity, and plays the fire
+## pose + a pitch-varied launch sound. Called repeatedly while holding the
+## button in fire range (see the cooldown loop in _physics_process), so the
+## per-shot jitter on droplet_forward_speed is what keeps a sustained press
+## from reading as identical repeated shots.
+func _fire_droplet() -> void:
+	var jitter := randf_range(-tuning.droplet_forward_speed_jitter, tuning.droplet_forward_speed_jitter)
+	var fire_velocity := velocity + Vector2(facing_x * (tuning.droplet_forward_speed + jitter), 0.0)
+	water_fired.emit(proboscis_sensor.global_position, fire_velocity)
+	water_level = maxf(water_level - tuning.water_per_shot, 0.0)
+	water_level_changed.emit(water_level)
+	_play_fire_pose()
+	fire_sound.pitch_scale = randf_range(0.9, 1.1)
+	fire_sound.play()
+
+
+## Brief proboscis "fire" pose: grows then settles back to normal size for the
+## pulse duration. Uniform scale is a first-pass approximation (REQUIREMENTS.md
+## Step 5 may refine it to a bottom-anchored tip flare if this doesn't read
+## well). Kills any in-flight tween first since hold-to-spray can re-trigger
+## this faster than one grow+settle cycle completes at tuned intervals.
+func _play_fire_pose() -> void:
+	if _fire_pose_tween:
+		_fire_pose_tween.kill()
+	proboscis.scale = Vector2.ONE
+	_fire_pose_tween = create_tween()
+	_fire_pose_tween.tween_property(proboscis, "scale", Vector2.ONE * FIRE_POSE_SCALE, FIRE_POSE_DURATION) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_fire_pose_tween.tween_property(proboscis, "scale", Vector2.ONE, FIRE_POSE_DURATION) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 
 ## Fired by Main when a goal plant reaches full bloom (Step 6): a big multi-

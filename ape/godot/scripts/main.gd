@@ -8,6 +8,7 @@ extends Node2D
 const SEED_SCENE: PackedScene = preload("res://scenes/seed.tscn")
 const SEEDLING_SCENE: PackedScene = preload("res://scenes/seedling.tscn")
 const WIN_OVERLAY_SCENE: PackedScene = preload("res://scenes/win_overlay.tscn")
+const WATER_DROPLET_SCENE: PackedScene = preload("res://scenes/water_droplet.tscn")
 
 ## A seed pops out "beside" its parent plant rather than on top of it.
 const SEED_SPAWN_OFFSET: Vector2 = Vector2(18.0, 0.0)
@@ -38,6 +39,7 @@ func _ready() -> void:
 	# GoalPanel looks Main up by group in its own _ready(), which fires
 	# before this one (children ready before parents).
 	intro_screen.start_requested.connect(_on_intro_start_requested)
+	player.water_fired.connect(_on_player_water_fired)
 	_select_goals()
 	for child in get_children():
 		_wire_seedling(child)
@@ -69,6 +71,13 @@ func _on_seedling_seed_popped(hybrid_type: PlantData.PlantType, at_position: Vec
 	seed.plant_type = hybrid_type
 	seed.global_position = at_position + SEED_SPAWN_OFFSET
 	add_child(seed)
+
+
+func _on_player_water_fired(position: Vector2, velocity: Vector2) -> void:
+	var droplet: Area2D = WATER_DROPLET_SCENE.instantiate()
+	droplet.global_position = position
+	droplet.velocity = velocity
+	add_child(droplet)
 
 
 func _on_plot_seed_planted(hybrid_type: PlantData.PlantType, at_position: Vector2) -> void:
