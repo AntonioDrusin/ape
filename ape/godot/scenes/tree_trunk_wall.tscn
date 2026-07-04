@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(80, 896)
+
+[node name="TreeTrunkWall" type="StaticBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Trunk" type="Polygon2D" parent="."]
+color = Color(0.33, 0.26, 0.19, 1)
+polygon = PackedVector2Array(-40, -448, 40, -448, 40, 448, -40, 448)
+
+[node name="Highlight" type="Polygon2D" parent="."]
+color = Color(0.42, 0.34, 0.24, 1)
+polygon = PackedVector2Array(-40, -448, -26, -448, -26, 448, -40, 448)
+
+[node name="Shadow" type="Polygon2D" parent="."]
+color = Color(0.22, 0.17, 0.12, 1)
+polygon = PackedVector2Array(24, -448, 40, -448, 40, 448, 24, 448)
+
+[node name="Ridge1" type="Polygon2D" parent="."]
+color = Color(0.24, 0.19, 0.13, 1)
+polygon = PackedVector2Array(-36, -326, 36, -330, 36, -318, -36, -314)
+
+[node name="Ridge2" type="Polygon2D" parent="."]
+color = Color(0.24, 0.19, 0.13, 1)
+polygon = PackedVector2Array(-36, -166, 36, -170, 36, -158, -36, -154)
+
+[node name="Ridge3" type="Polygon2D" parent="."]
+color = Color(0.24, 0.19, 0.13, 1)
+polygon = PackedVector2Array(-36, -6, 36, -10, 36, 2, -36, 6)
+
+[node name="Ridge4" type="Polygon2D" parent="."]
+color = Color(0.24, 0.19, 0.13, 1)
+polygon = PackedVector2Array(-36, 154, 36, 150, 36, 162, -36, 166)
+
+[node name="Ridge5" type="Polygon2D" parent="."]
+color = Color(0.24, 0.19, 0.13, 1)
+polygon = PackedVector2Array(-36, 314, 36, 310, 36, 322, -36, 326)
