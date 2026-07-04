@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/flower_guard.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/wings.gd" id="2"]
 [ext_resource type="AudioStream" path="res://assets/audio/water_suck.wav" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/water_pour.wav" id="4"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 24.0
@@ -60,3 +61,6 @@ polygon = PackedVector2Array(-4, 8, 4, 8, 2, 18, -2, 18)
 
 [node name="WindupBuzz" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3")
+
+[node name="HitSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4")

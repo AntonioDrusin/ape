@@ -74,7 +74,7 @@ the game yourself) and update ARCHITECTURE.md before moving on.
 **Testable:** a new hazard patrols visibly near a flower and does nothing
 else yet.
 
-### Step 2 — Aggro build/decay + telegraph (no punishment yet)
+### Step 2 — Aggro build/decay + telegraph (COMPLETED)
 
 - Add `notice_range`, `aggro_build_rate`, `aggro_decay_rate`, and
   `aggro_threshold` to the guard (values live on the guard's own
@@ -94,7 +94,7 @@ else yet.
 buzz/visual escalate and freeze into a windup pose after a few seconds;
 back off before it commits and watch it stand down instead of attacking.
 
-### Step 3 — Lunge + punishment
+### Step 3 — Lunge + punishment (COMPLETED)
 
 - If windup completes without the player leaving `notice_range`, the guard
   dashes at the player's current position at `lunge_speed` (a real Area2D
