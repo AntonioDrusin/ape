@@ -16,25 +16,29 @@ shape = SubResource("CircleShape2D_1")
 
 [node name="Visual" type="Node2D" parent="."]
 
-[node name="Bug1" type="Polygon2D" parent="Visual"]
+[node name="Speck1" type="Polygon2D" parent="Visual"]
 color = Color(0.12, 0.1, 0.08, 0.9)
-polygon = PackedVector2Array(-10, -6, -6, -6, -6, -2, -10, -2)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
-[node name="Bug2" type="Polygon2D" parent="Visual"]
+[node name="Speck2" type="Polygon2D" parent="Visual"]
 color = Color(0.12, 0.1, 0.08, 0.85)
-polygon = PackedVector2Array(4, -9, 8, -9, 8, -5, 4, -5)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
-[node name="Bug3" type="Polygon2D" parent="Visual"]
+[node name="Speck3" type="Polygon2D" parent="Visual"]
 color = Color(0.12, 0.1, 0.08, 0.9)
-polygon = PackedVector2Array(8, 2, 12, 2, 12, 6, 8, 6)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
-[node name="Bug4" type="Polygon2D" parent="Visual"]
+[node name="Speck4" type="Polygon2D" parent="Visual"]
 color = Color(0.12, 0.1, 0.08, 0.85)
-polygon = PackedVector2Array(-4, 6, 0, 6, 0, 10, -4, 10)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
-[node name="Bug5" type="Polygon2D" parent="Visual"]
+[node name="Speck5" type="Polygon2D" parent="Visual"]
 color = Color(0.12, 0.1, 0.08, 0.9)
-polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
+
+[node name="Speck6" type="Polygon2D" parent="Visual"]
+color = Color(0.12, 0.1, 0.08, 0.85)
+polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
 [node name="StealSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("2")
