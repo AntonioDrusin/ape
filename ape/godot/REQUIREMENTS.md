@@ -39,8 +39,11 @@ the game yourself) and update ARCHITECTURE.md before moving on.
   decay back down — the bail is always available, right up until the
   lunge itself starts.
 - **Punishment reuses the existing gnat-touch contract exactly**: on
-  lunge-contact, duck-typed calls to `steal_water()` and `lose_pollen()`
-  (mirrors `enemy.gd`). **Seeds are never touched**, same rule and same
+  contact with the guard's body, duck-typed calls to `steal_water()` and
+  `lose_pollen()` (mirrors `enemy.gd`). This applies regardless of state —
+  patrol, windup, or lunge — so brushing the guard's body during its normal
+  orbit punishes just like a connecting lunge does; it's not gated to the
+  lunge dash alone. **Seeds are never touched**, same rule and same
   reasoning `enemy.gd` already documents — losing a seed is too punishing
   for a "friction, not failure" hazard.
 - **No lose state; this is friction.** A hit costs water/pollen progress,
@@ -100,9 +103,10 @@ back off before it commits and watch it stand down instead of attacking.
   dashes at the player's current position at `lunge_speed` (a real Area2D
   move, not instant), then reverts to patrol regardless of whether it
   connected.
-- On contact during the lunge: duck-typed `steal_water()` /
-  `lose_pollen()` calls exactly like `enemy.gd`'s `_on_body_entered` (seeds
-  untouched), plus a distinct hit sound (not the calm buzz).
+- On contact with the guard's body — in any state, not just during the
+  lunge: duck-typed `steal_water()` / `lose_pollen()` calls exactly like
+  `enemy.gd`'s `_on_body_entered` (seeds untouched), plus a distinct hit
+  sound (not the calm buzz).
 - After the lunge resolves (hit or miss), aggro resets to 0 and
   `reaggro_cooldown` gates it from re-noticing the player immediately.
 

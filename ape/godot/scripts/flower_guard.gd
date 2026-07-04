@@ -172,12 +172,11 @@ func _resolve_lunge() -> void:
 
 
 ## Mirrors enemy.gd's _on_body_entered exactly (duck-typed steal_water()/
-## lose_pollen(), seeds untouched), but gated to the LUNGE dash itself --
-## this Area2D has monitoring=true throughout patrol/windup too, so
-## incidental overlap then must never punish.
+## lose_pollen(), seeds untouched). Unlike Step 3's original version, this
+## fires in any state -- brushing the guard's body punishes the same as a
+## lunge connecting, so grazing it mid-patrol/windup isn't a free pass just
+## because aggro hasn't committed to a lunge yet.
 func _on_body_entered(body: Node) -> void:
-	if state != State.LUNGE:
-		return
 	var hit := false
 	if body.has_method("steal_water"):
 		body.steal_water(steal_amount)
