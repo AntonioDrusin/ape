@@ -13,7 +13,6 @@ signal water_fired(position: Vector2, velocity: Vector2)
 @onready var wings: Node2D = $Visual/Wings
 @onready var visual: Node2D = $Visual
 @onready var proboscis: Node2D = $Visual/Proboscis
-@onready var water_drip: CPUParticles2D = $Visual/Proboscis/WaterDrip
 @onready var water_sensor: Area2D = $WaterSensor
 @onready var proboscis_sensor: Area2D = $Visual/Proboscis/ProboscisSensor
 @onready var pollen_blob: Polygon2D = $Visual/PollenBlob
@@ -47,7 +46,6 @@ var pollen_type: PlantData.PlantType = PlantData.PlantType.DAISY
 var has_seed: bool = false
 var seed_type: PlantData.PlantType = PlantData.PlantType.DAISY
 var _drink_volume: float = 0.0
-var _water_volume: float = 0.0
 var _proboscis_shake_phase: float = 0.0
 var _fire_cooldown: float = 0.0
 var _fire_pose_tween: Tween
@@ -152,11 +150,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		_fire_cooldown = 0.0
 
-	if hovered_seedling and water_level > 0.0:
-		hovered_seedling.water(delta)
-		water_level = maxf(water_level - delta / tuning.water_drain_time, 0.0)
-		water_level_changed.emit(water_level)
-
 	if hovered_seedling:
 		_handle_pollen_hover(hovered_seedling)
 
@@ -174,7 +167,6 @@ func _physics_process(delta: float) -> void:
 		_set_pollen(false, pollen_type)
 		_play_pollen_puff()
 
-	var watering := hovered_seedling != null and water_level > 0.0
 	if proboscis:
 		proboscis.visible = holding_proboscis
 		if not holding_proboscis and _fire_pose_tween:
@@ -186,11 +178,8 @@ func _physics_process(delta: float) -> void:
 		else:
 			_proboscis_shake_phase = 0.0
 			proboscis.position.x = 0.0
-	if water_drip:
-		water_drip.emitting = watering
 
 	_drink_volume = _update_loop_sound(drink_sound, sucking, _drink_volume, delta)
-	_water_volume = _update_loop_sound(water_sound, watering, _water_volume, delta)
 
 
 ## Hovering a BLOOMED flower with an empty pollen slot collects it; carrying

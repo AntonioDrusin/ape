@@ -15,7 +15,6 @@ class_name GameplayTuning
 @export_group("Water")
 @export var water_fill_time: float = 4.0
 @export var water_rest_height: float = 7.0
-@export var water_drain_time: float = 2.0
 
 ## Step 2+: proboscis suck range and shake feedback. Amplitude/speed are raw
 ## pixels/radians-per-second so tuning is a direct Inspector slider.
@@ -28,9 +27,15 @@ class_name GameplayTuning
 ## playtesting, expect these to change in Step 5's balance pass.
 @export var water_per_shot: float = 0.12                ## fraction of a full tank (0..1) drained per droplet fired
 @export var droplet_forward_speed: float = 65.0         ## px/s added to the player's own velocity, along facing_x
-@export var droplet_gravity: float = 500.0              ## px/s^2 applied to a fired droplet in flight
+@export var droplet_gravity: float = 220.0              ## px/s^2 applied to a fired droplet in flight -- flatter than a real drop so it stays near flower height longer instead of just going faster
 @export var droplet_fire_interval: float = 0.2          ## seconds between shots while held in fire range (5/sec)
 @export var droplet_forward_speed_jitter: float = 7.5   ## +/- px/s randomized onto droplet_forward_speed per shot
+
+## Step 4: seconds-of-watering-equivalent applied to a seedling per droplet
+## hit (passed straight into Seedling.water(amount)). Placeholder -- Step 5
+## balances this against water_per_shot so a full tank blooms a seedling in
+## a similar number of shots the old drain took in seconds.
+@export var water_per_droplet: float = 0.5
 
 ## Multiplies max_speed while carrying a seed, for a slight "heaviness" cue
 ## (REQUIREMENTS.md fit-and-finish). Set to 1.0 to disable if it frustrates

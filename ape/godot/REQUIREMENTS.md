@@ -134,7 +134,7 @@ away from water does nothing yet.
 launches a visible droplet that arcs forward and down and disappears; no
 flower interaction yet (Step 4).
 
-### Step 4 — Droplet-collision watering (replaces hover-drain)
+### Step 4 — Droplet-collision watering — Done (replaces hover-drain)
 
 - Remove the old hover-drain block in `player.gd` entirely (the
   `hovered_seedling && water_level > 0.0 → hovered_seedling.water(delta)`
