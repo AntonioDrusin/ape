@@ -17,7 +17,7 @@
 [node name="Main" type="Node2D" unique_id=161603854 groups=["main"]]
 script = ExtResource("9")
 
-[node name="Background" parent="." instance=ExtResource("12")]
+[node name="Background" parent="." unique_id=1588520922 instance=ExtResource("12")]
 
 [node name="Music" type="AudioStreamPlayer" parent="." unique_id=1498417172]
 stream = ExtResource("6")
@@ -25,8 +25,10 @@ volume_db = -20.0
 autoplay = true
 
 [node name="HUD" parent="." unique_id=1979802882 instance=ExtResource("5")]
+visible = false
 
 [node name="IntroScreen" parent="." unique_id=698040683 instance=ExtResource("10")]
+visible = false
 
 [node name="Ground" parent="." unique_id=1801489785 instance=ExtResource("1")]
 position = Vector2(300, 420)
@@ -73,10 +75,10 @@ position = Vector2(260, 152)
 scale = Vector2(0.6, 0.5)
 
 [node name="Enemy1" parent="." unique_id=1267444526 instance=ExtResource("7")]
-position = Vector2(-150, 180)
+position = Vector2(-72, 142)
 
 [node name="Enemy2" parent="." unique_id=229904036 instance=ExtResource("7")]
-position = Vector2(300, 100)
+position = Vector2(782, 173)
 
 [node name="Enemy3" parent="." unique_id=711714668 instance=ExtResource("7")]
 position = Vector2(650, -30)
@@ -85,7 +87,7 @@ position = Vector2(650, -30)
 position = Vector2(900, 300)
 
 [node name="Enemy5" parent="." unique_id=1510524078 instance=ExtResource("7")]
-position = Vector2(-300, 300)
+position = Vector2(247, 295)
 
 [node name="Seedling1" parent="." unique_id=56172713 instance=ExtResource("8")]
 position = Vector2(120, 396)
@@ -141,9 +143,8 @@ scale = Vector2(0.428, 0.428)
 growth = 35.0
 bloom_type = 4
 
-[node name="FlowerGuard1" parent="." instance=ExtResource("13")]
-position = Vector2(1010, 174)
-guarded_flower = NodePath("../Seedling10")
+[node name="FlowerGuard1" parent="." unique_id=1294773526 instance=ExtResource("13")]
+position = Vector2(1002, 181)
 
 [node name="BoundsTop" parent="." unique_id=1411292306 instance=ExtResource("4")]
 position = Vector2(400, -320)
@@ -164,10 +165,10 @@ rotation = 1.5707964
 scale = Vector2(7, 1)
 
 [node name="Enemy6" parent="." unique_id=559242830 instance=ExtResource("7")]
-position = Vector2(-178, -105)
+position = Vector2(-273, 79)
 
 [node name="Enemy7" parent="." unique_id=2030795838 instance=ExtResource("7")]
-position = Vector2(383, -127)
+position = Vector2(402, 210)
 
 [node name="Enemy8" parent="." unique_id=776101015 instance=ExtResource("7")]
 position = Vector2(812, -104)
@@ -176,7 +177,7 @@ position = Vector2(812, -104)
 position = Vector2(710, -250)
 
 [node name="Enemy10" parent="." unique_id=555111333 instance=ExtResource("7")]
-position = Vector2(820, 380)
+position = Vector2(375, 94)
 
 [node name="Platform9" parent="." unique_id=1988330634 instance=ExtResource("1")]
 position = Vector2(401, -76)
@@ -189,29 +190,41 @@ scale = Vector2(0.36, 0.25)
 [node name="Platform10" parent="." unique_id=1988330635 instance=ExtResource("1")]
 position = Vector2(750, -200)
 
-[node name="Plot1" parent="." instance=ExtResource("11")]
+[node name="Plot1" parent="." unique_id=1532181647 instance=ExtResource("11")]
 position = Vector2(-100, 396)
 
-[node name="Plot2" parent="." instance=ExtResource("11")]
+[node name="Plot2" parent="." unique_id=937956522 instance=ExtResource("11")]
 position = Vector2(275, 396)
 
-[node name="Plot3" parent="." instance=ExtResource("11")]
+[node name="Plot3" parent="." unique_id=1341928439 instance=ExtResource("11")]
 position = Vector2(650, 396)
 
-[node name="Plot4" parent="." instance=ExtResource("11")]
+[node name="Plot4" parent="." unique_id=1092200782 instance=ExtResource("11")]
 position = Vector2(-80, 244)
 
-[node name="Plot5" parent="." instance=ExtResource("11")]
+[node name="Plot5" parent="." unique_id=986541853 instance=ExtResource("11")]
 position = Vector2(710, -216)
 
-[node name="Plot6" parent="." instance=ExtResource("11")]
+[node name="Plot6" parent="." unique_id=1294535443 instance=ExtResource("11")]
 position = Vector2(560, 44)
 
-[node name="Plot7" parent="." instance=ExtResource("11")]
+[node name="Plot7" parent="." unique_id=1874203395 instance=ExtResource("11")]
 position = Vector2(10, 204)
 
-[node name="Plot8" parent="." instance=ExtResource("11")]
+[node name="Plot8" parent="." unique_id=2041395954 instance=ExtResource("11")]
 position = Vector2(440, 324)
 
-[node name="Plot9" parent="." instance=ExtResource("11")]
+[node name="Plot9" parent="." unique_id=1371631756 instance=ExtResource("11")]
 position = Vector2(920, 244)
+
+[node name="FlowerGuard2" parent="." unique_id=771775191 instance=ExtResource("13")]
+position = Vector2(-191, 188)
+
+[node name="FlowerGuard3" parent="." unique_id=123984219 instance=ExtResource("13")]
+position = Vector2(529, 263)
+
+[node name="FlowerGuard4" parent="." unique_id=1536827063 instance=ExtResource("13")]
+position = Vector2(83, 127)
+
+[node name="FlowerGuard5" parent="." unique_id=1714610262 instance=ExtResource("13")]
+position = Vector2(607, -19)
