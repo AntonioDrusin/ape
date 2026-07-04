@@ -28,10 +28,11 @@ autoplay = true
 [node name="HUD" parent="." unique_id=1979802882 instance=ExtResource("5")]
 
 [node name="IntroScreen" parent="." unique_id=698040683 instance=ExtResource("10")]
+visible = false
 
 [node name="Ground" parent="." unique_id=1801489785 instance=ExtResource("1")]
-position = Vector2(300, 420)
-scale = Vector2(7, 1.5)
+position = Vector2(391, 420.00003)
+scale = Vector2(13, 1.5)
 
 [node name="Platform1" parent="." unique_id=915236013 instance=ExtResource("1")]
 position = Vector2(-150, 260)
