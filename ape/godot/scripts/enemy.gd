@@ -16,10 +16,10 @@ extends Area2D
 @export var retarget_max: float = 2.2
 @export var steal_amount: float = 0.35
 @export var speck_orbit_center_spread: float = 4.0
-@export var speck_orbit_radius_min: float = 3.0
-@export var speck_orbit_radius_max: float = 7.0
+@export var speck_orbit_radius_min: float = 7.0
+@export var speck_orbit_radius_max: float = 16.0
 @export var speck_orbit_speed_min: float = 2.0
-@export var speck_orbit_speed_max: float = 5.0
+@export var speck_orbit_speed_max: float = 6.0
 
 @onready var visual: Node2D = $Visual
 @onready var steal_sound: AudioStreamPlayer2D = $StealSound
