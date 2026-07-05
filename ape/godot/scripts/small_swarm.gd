@@ -21,6 +21,17 @@ extends Area2D
 @export var speck_orbit_speed_min: float = 2.0
 @export var speck_orbit_speed_max: float = 6.0
 
+## Tuning for each speck's individual knockout fall (see _fall_speck) --
+## separate from the root's own fall in hazard_knockback.gd, which only
+## drops the swarm's collision/root position, not the specks.
+@export var speck_fall_gravity: float = 300.0
+@export var speck_scatter_x_min: float = -10.0
+@export var speck_scatter_x_max: float = 10.0
+@export var speck_rest_y_min: float = 2.0
+@export var speck_rest_y_max: float = 6.0
+@export var speck_scatter_speed: float = 30.0
+@export var speck_recover_speed: float = 60.0
+
 ## One droplet hit is enough to knock a swarm down (see wasp.gd's higher
 ## threshold -- the swarm is the fragile hazard, the wasp the tanky one).
 @export var knockback_hit_threshold: int = 1
@@ -35,6 +46,12 @@ var _target: Vector2
 var _retarget_timer: float = 0.0
 var _hits_taken: int = 0
 
+## Set true when a knockout recovers; forces the swarm to fly straight back
+## to _home (ignoring retarget_timer/wander picks) before resuming its normal
+## leash-wander, so a knocked-down swarm always re-forms at its original spot
+## instead of picking up wandering from wherever it landed.
+var _returning_home: bool = false
+
 ## Per-speck orbit state, one dictionary per child of Visual, built in
 ## _ready() so the speck count isn't hardcoded anywhere.
 var _specks: Array[Dictionary] = []
@@ -43,6 +60,8 @@ var _specks: Array[Dictionary] = []
 func _ready() -> void:
 	_home = position
 	body_entered.connect(_on_body_entered)
+	_knockback.knocked_out.connect(_on_knocked_out)
+	_knockback.recovered.connect(_on_knockback_recovered)
 	_pick_new_target()
 	for speck: Node2D in visual.get_children():
 		var center_offset := Vector2(
@@ -66,15 +85,22 @@ func _process(delta: float) -> void:
 	if _knockback.active:
 		position += _knockback.step(delta)
 		visual.position = _knockback.vibrate_offset
+		for speck_state: Dictionary in _specks:
+			_fall_speck(speck_state, delta)
 		for area in get_overlapping_areas():
 			if area.is_in_group("water"):
 				queue_free()
 				return
 		return
 
-	_retarget_timer -= delta
-	if _retarget_timer <= 0.0 or position.distance_to(_target) < 4.0:
-		_pick_new_target()
+	if _returning_home:
+		if position.distance_to(_home) < 4.0:
+			_returning_home = false
+			_pick_new_target()
+	else:
+		_retarget_timer -= delta
+		if _retarget_timer <= 0.0 or position.distance_to(_target) < 4.0:
+			_pick_new_target()
 	position = position.move_toward(_target, speed * delta)
 	for speck_state: Dictionary in _specks:
 		speck_state["angle"] += speck_state["angular_speed"] * delta
@@ -82,7 +108,61 @@ func _process(delta: float) -> void:
 		var center_offset: Vector2 = speck_state["center_offset"]
 		var radius: float = speck_state["radius"]
 		var speck: Node2D = speck_state["node"]
-		speck.position = center_offset + Vector2(cos(angle), sin(angle)) * radius
+		var orbit_pos := center_offset + Vector2(cos(angle), sin(angle)) * radius
+		# Grounded specks (see _fall_speck) ease back up into orbit formation
+		# rather than snapping the instant the swarm recovers.
+		if speck_state.get("grounded", false):
+			speck.position = speck.position.move_toward(orbit_pos, speck_recover_speed * delta)
+			if speck.position.distance_to(orbit_pos) < 2.0:
+				speck_state["grounded"] = false
+		else:
+			speck.position = orbit_pos
+
+
+## Fires when a droplet knocks the swarm down (hazard_knockback.gd's
+## knocked_out signal, emitted once per knockback regardless of hit
+## threshold). Gives each speck its own randomized resting spot near the
+## ground and resets its fall state, so _fall_speck can drop each one there
+## independently instead of the whole cluster staying frozen mid-air as one
+## rigid blob while the root falls.
+func _on_knocked_out() -> void:
+	for speck_state: Dictionary in _specks:
+		speck_state["fall_velocity"] = 0.0
+		speck_state["grounded"] = false
+		speck_state["rest_offset"] = Vector2(
+			randf_range(speck_scatter_x_min, speck_scatter_x_max),
+			randf_range(speck_rest_y_min, speck_rest_y_max)
+		)
+
+
+## Advances one speck's individual knockout fall by delta: gravity pulls it
+## down toward its rest_offset (set in _on_knocked_out) while it eases
+## sideways toward the same offset's x, so each member of the swarm visibly
+## drops to its own spot on the ground rather than the cluster sinking as a
+## single unit. Once it reaches rest_offset.y it's marked "grounded" and left
+## alone until _process's normal branch eases it back into orbit formation.
+func _fall_speck(speck_state: Dictionary, delta: float) -> void:
+	if speck_state.get("grounded", false):
+		return
+	var speck: Node2D = speck_state["node"]
+	var rest_offset: Vector2 = speck_state["rest_offset"]
+	speck_state["fall_velocity"] += speck_fall_gravity * delta
+	var pos: Vector2 = speck.position
+	pos.y += speck_state["fall_velocity"] * delta
+	pos.x = move_toward(pos.x, rest_offset.x, speck_scatter_speed * delta)
+	if pos.y >= rest_offset.y:
+		pos.y = rest_offset.y
+		speck_state["grounded"] = true
+	speck.position = pos
+
+
+## Overrides whatever wander target was in progress: once knocked down and
+## recovered, the swarm must fly straight back to its original spawn point
+## before resuming leash-wander, rather than picking up wandering from
+## wherever it landed.
+func _on_knockback_recovered() -> void:
+	_target = _home
+	_returning_home = true
 
 
 func _pick_new_target() -> void:

@@ -72,6 +72,7 @@ func _ready() -> void:
 	_base_flap_speed = wings.flap_speed
 	_base_color = visual.modulate
 	body_entered.connect(_on_body_entered)
+	_knockback.recovered.connect(_on_knockback_recovered)
 
 
 func _process(delta: float) -> void:
@@ -176,6 +177,17 @@ func _update_state(delta: float) -> void:
 			position = position.move_toward(orbit_point, lunge_speed * delta)
 			if position.distance_to(orbit_point) < 4.0:
 				_resolve_lunge()
+
+
+## Fires once the fall/land/vibrate cycle in hazard_knockback.gd finishes.
+## Routes back through State.RETURN -- the same "ease back onto the orbit
+## point at the frozen _angle" logic Step 3's lunge already uses -- instead
+## of letting the PATROL branch's unconditional position write snap the wasp
+## straight onto the circle next frame. _angle never advances outside
+## PATROL, so the orbit point reached is the same one the wasp would have
+## been circling to before it got knocked down.
+func _on_knockback_recovered() -> void:
+	state = State.RETURN
 
 
 ## Ends the lunge/return cycle regardless of hit or miss: aggro resets and
