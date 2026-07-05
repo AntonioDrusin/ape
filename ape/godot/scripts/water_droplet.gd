@@ -42,6 +42,15 @@ func _physics_process(delta: float) -> void:
 		if area.is_in_group("water"):
 			_splash(false, null)
 			return
+		# Hazards (small_swarm.gd, wasp.gd) duck-type knockback() the same way
+		# a seedling duck-types water() -- landing a droplet on one knocks it
+		# down instead of watering it. Plays the same hit-splash as a seedling
+		# hit; the hazard itself (fall/vibrate) is the distinct reaction, not
+		# a new droplet-side effect.
+		if area.has_method("knockback"):
+			area.knockback(velocity)
+			_splash(true, null)
+			return
 	if not get_overlapping_bodies().is_empty():
 		_splash(false, null)
 
@@ -55,8 +64,9 @@ func _splash(hit: bool, seedling: Node) -> void:
 	monitoring = false
 	visual.visible = false
 
-	if hit:
+	if hit and seedling:
 		seedling.water(tuning.water_per_droplet)
+	if hit:
 		hit_splash.restart()
 		hit_splash.emitting = true
 		hit_splash_sound.pitch_scale = randf_range(0.9, 1.1)

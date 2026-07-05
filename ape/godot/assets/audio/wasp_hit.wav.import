@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://3eqlcon175fm"
-path="res://.godot/imported/flower_guard_hit.wav-7255de2eb238f5f166041b4350d26246.sample"
+path="res://.godot/imported/wasp_hit.wav-bde418679a00e0196be4870c904ea465.sample"
 
 [deps]
 
 source_file="res://assets/audio/wasp_hit.wav"
-dest_files=["res://.godot/imported/flower_guard_hit.wav-7255de2eb238f5f166041b4350d26246.sample"]
+dest_files=["res://.godot/imported/wasp_hit.wav-bde418679a00e0196be4870c904ea465.sample"]
 
 [params]
 

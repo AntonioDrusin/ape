@@ -1,13 +1,15 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/small_swarm.gd" id="1"]
 [ext_resource type="AudioStream" path="res://assets/audio/water_steal.ogg" id="2"]
+[ext_resource type="Script" path="res://scripts/hazard_knockback.gd" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/wasp_hit.wav" id="4"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 20.0
 
 [node name="SmallSwarm" type="Area2D" groups=["small_swarm"]]
-monitorable = false
+monitorable = true
 monitoring = true
 script = ExtResource("1")
 
@@ -42,3 +44,9 @@ polygon = PackedVector2Array(-2.5, -2.5, 2.5, -2.5, 2.5, 2.5, -2.5, 2.5)
 
 [node name="StealSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("2")
+
+[node name="KnockbackCast" type="RayCast2D" parent="."]
+script = ExtResource("3")
+
+[node name="KnockbackSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4")

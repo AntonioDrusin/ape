@@ -33,6 +33,10 @@ extends Area2D
 @export var reaggro_cooldown: float = 1.5
 @export var steal_amount: float = 0.35 ## matches small_swarm.gd's default so the two hazards feel like siblings
 
+## Tankier than small_swarm.gd's 1-hit threshold, matching the wasp's more
+## dangerous lunge.
+@export var knockback_hit_threshold: int = 2
+
 const FACING_TURN_SPEED := 12.0
 
 enum State { PATROL, WINDUP, LUNGE, RETURN }
@@ -41,6 +45,8 @@ enum State { PATROL, WINDUP, LUNGE, RETURN }
 @onready var wings: Node2D = $Visual/Wings
 @onready var windup_buzz: AudioStreamPlayer2D = $WindupBuzz
 @onready var hit_sound: AudioStreamPlayer2D = $HitSound
+@onready var knockback_sound: AudioStreamPlayer2D = $KnockbackSound
+@onready var _knockback: HazardKnockback = $KnockbackCast
 
 var _center: Vector2
 var _center_global: Vector2
@@ -51,6 +57,7 @@ var _base_flap_speed: float
 var _base_color: Color
 var _lunge_target: Vector2
 var _reaggro_cooldown_timer: float = 0.0
+var _hits_taken: int = 0
 
 var state: State = State.PATROL
 var aggro: float = 0.0
@@ -68,6 +75,15 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _knockback.active:
+		position += _knockback.step(delta)
+		visual.position = _knockback.vibrate_offset
+		for area in get_overlapping_areas():
+			if area.is_in_group("water"):
+				queue_free()
+				return
+		return
+
 	_update_aggro(delta)
 	_update_state(delta)
 
@@ -177,6 +193,8 @@ func _resolve_lunge() -> void:
 ## lunge connecting, so grazing it mid-patrol/windup isn't a free pass just
 ## because aggro hasn't committed to a lunge yet.
 func _on_body_entered(body: Node) -> void:
+	if _knockback.active:
+		return
 	var hit := false
 	if body.has_method("steal_water"):
 		body.steal_water(steal_amount)
@@ -187,6 +205,32 @@ func _on_body_entered(body: Node) -> void:
 	if hit:
 		hit_sound.pitch_scale = randf_range(0.9, 1.1)
 		hit_sound.play()
+
+
+## Duck-typed for water_droplet.gd, mirroring steal_water()/lose_pollen()'s
+## contract. Any hit -- even a sub-threshold one -- immediately cancels an
+## in-progress WINDUP/LUNGE telegraph (getting hit interrupts what the wasp
+## was doing), separately from whether this particular hit crosses
+## knockback_hit_threshold and actually knocks it down. No-op while already
+## down. See scripts/hazard_knockback.gd for the shared fall/land/vibrate/
+## recover state machine (also used by small_swarm.gd).
+func knockback(hit_velocity: Vector2) -> void:
+	if _knockback.active:
+		return
+	if state == State.WINDUP or state == State.LUNGE:
+		# Treated the same as a lunge resolving (see _resolve_lunge): aggro
+		# resets and reaggro_cooldown gates a beat before it can rebuild, so
+		# getting hit mid-telegraph buys the player the same breathing room a
+		# completed lunge would, instead of the wasp re-arming next frame.
+		windup_buzz.stop()
+		windup_timer = 0.0
+		_resolve_lunge()
+	_hits_taken += 1
+	if _hits_taken < knockback_hit_threshold:
+		return
+	_hits_taken = 0
+	knockback_sound.play()
+	_knockback.start(hit_velocity)
 
 
 ## Continuous visual/audio escalation, a pure function of aggro (and, while

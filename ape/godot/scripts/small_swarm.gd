@@ -21,12 +21,19 @@ extends Area2D
 @export var speck_orbit_speed_min: float = 2.0
 @export var speck_orbit_speed_max: float = 6.0
 
+## One droplet hit is enough to knock a swarm down (see wasp.gd's higher
+## threshold -- the swarm is the fragile hazard, the wasp the tanky one).
+@export var knockback_hit_threshold: int = 1
+
 @onready var visual: Node2D = $Visual
 @onready var steal_sound: AudioStreamPlayer2D = $StealSound
+@onready var knockback_sound: AudioStreamPlayer2D = $KnockbackSound
+@onready var _knockback: HazardKnockback = $KnockbackCast
 
 var _home: Vector2
 var _target: Vector2
 var _retarget_timer: float = 0.0
+var _hits_taken: int = 0
 
 ## Per-speck orbit state, one dictionary per child of Visual, built in
 ## _ready() so the speck count isn't hardcoded anywhere.
@@ -56,6 +63,15 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _knockback.active:
+		position += _knockback.step(delta)
+		visual.position = _knockback.vibrate_offset
+		for area in get_overlapping_areas():
+			if area.is_in_group("water"):
+				queue_free()
+				return
+		return
+
 	_retarget_timer -= delta
 	if _retarget_timer <= 0.0 or position.distance_to(_target) < 4.0:
 		_pick_new_target()
@@ -83,6 +99,8 @@ func _pick_new_target() -> void:
 ## punishing, per REQUIREMENTS.md. One steal_sound play per touch even
 ## though both effects can fire.
 func _on_body_entered(body: Node) -> void:
+	if _knockback.active:
+		return
 	var hit := false
 	if body.has_method("steal_water"):
 		body.steal_water(steal_amount)
@@ -92,3 +110,19 @@ func _on_body_entered(body: Node) -> void:
 		hit = true
 	if hit:
 		steal_sound.play()
+
+
+## Duck-typed for water_droplet.gd, mirroring steal_water()/lose_pollen()'s
+## contract: a droplet calls this unconditionally on any overlap, and this
+## hazard decides what a hit means. No-op while already knocked down (can't
+## be knocked down twice). See scripts/hazard_knockback.gd for the actual
+## fall/land/vibrate/recover state machine, shared with wasp.gd.
+func knockback(hit_velocity: Vector2) -> void:
+	if _knockback.active:
+		return
+	_hits_taken += 1
+	if _hits_taken < knockback_hit_threshold:
+		return
+	_hits_taken = 0
+	knockback_sound.play()
+	_knockback.start(hit_velocity)
