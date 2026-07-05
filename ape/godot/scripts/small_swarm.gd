@@ -3,7 +3,7 @@ extends Area2D
 ## A drifting gnat-cloud hazard that steals water and knocks off carried
 ## pollen from the player on touch.
 ## Movement is a leash, not free-roaming: targets are picked within
-## wander_radius of the spawn position, so enemies placed near different
+## wander_radius of the spawn position, so swarms placed near different
 ## platforms in the level stay spread out instead of drifting into one
 ## cluster.
 ## Each speck under Visual orbits its own center point at its own radius and
@@ -77,7 +77,7 @@ func _pick_new_target() -> void:
 
 ## The player is a physics body, so this Area2D detects it directly via
 ## body_entered — no per-tick polling like the Area2D-vs-Area2D detectables.
-## Duck-typed on steal_water()/lose_pollen() so the enemy doesn't depend on
+## Duck-typed on steal_water()/lose_pollen() so the swarm doesn't depend on
 ## the player class; the player owns clamping its own state and notifying
 ## the HUD. Seeds are never touched here — losing a seed would be too
 ## punishing, per REQUIREMENTS.md. One steal_sound play per touch even

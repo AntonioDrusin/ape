@@ -7,7 +7,7 @@ extends Area2D
 ## windup before it would ever lunge. Step 3 (this): once windup
 ## completes, dashes at the player's position captured at that instant
 ## (not homing), eases back onto the orbit circle, then resets aggro and
-## gates re-noticing for reaggro_cooldown. Unlike enemy.gd's random
+## gates re-noticing for reaggro_cooldown. Unlike small_swarm.gd's random
 ## leash-wander, the orbit is a fixed circle around the guard's own spawn
 ## point so it always reads as territorial rather than roaming free. The
 ## visual stays level (no spin) so the guard always reads as horizontal,
@@ -17,8 +17,8 @@ extends Area2D
 @export var orbit_speed: float = 1.2
 
 ## Step 2 aggro/telegraph tuning. Kept as local @exports (not GameplayTuning)
-## to stay consistent with this script's own Step 1 precedent and enemy.gd's
-## style; see REQUIREMENTS.md's architectural direction. Placeholder values,
+## to stay consistent with this script's own Step 1 precedent and
+## small_swarm.gd's style; see REQUIREMENTS.md's architectural direction. Placeholder values,
 ## meant to be tuned against the player's real droplet range in Step 4.
 @export var notice_range: float = 144.0
 @export var aggro_build_rate: float = 0.8
@@ -31,7 +31,7 @@ extends Area2D
 ## Step 3 lunge/punishment tuning. Same local-@export precedent as above.
 @export var lunge_speed: float = 260.0
 @export var reaggro_cooldown: float = 1.5
-@export var steal_amount: float = 0.35 ## matches enemy.gd's default so the two hazards feel like siblings
+@export var steal_amount: float = 0.35 ## matches small_swarm.gd's default so the two hazards feel like siblings
 
 const FACING_TURN_SPEED := 12.0
 
@@ -171,7 +171,7 @@ func _resolve_lunge() -> void:
 	_reaggro_cooldown_timer = reaggro_cooldown
 
 
-## Mirrors enemy.gd's _on_body_entered exactly (duck-typed steal_water()/
+## Mirrors small_swarm.gd's _on_body_entered exactly (duck-typed steal_water()/
 ## lose_pollen(), seeds untouched). Unlike Step 3's original version, this
 ## fires in any state -- brushing the guard's body punishes the same as a
 ## lunge connecting, so grazing it mid-patrol/windup isn't a free pass just

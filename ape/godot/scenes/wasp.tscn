@@ -1,14 +1,14 @@
 [gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/flower_guard.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/wasp.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/wings.gd" id="2"]
 [ext_resource type="AudioStream" path="res://assets/audio/water_suck.wav" id="3"]
-[ext_resource type="AudioStream" path="res://assets/audio/flower_guard_hit.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/wasp_hit.wav" id="4"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 24.0
 
-[node name="FlowerGuard" type="Area2D" groups=["flower_guard"]]
+[node name="Wasp" type="Area2D" groups=["wasp"]]
 monitorable = false
 monitoring = true
 script = ExtResource("1")

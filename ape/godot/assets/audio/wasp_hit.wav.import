@@ -7,7 +7,7 @@ path="res://.godot/imported/flower_guard_hit.wav-7255de2eb238f5f166041b4350d2624
 
 [deps]
 
-source_file="res://assets/audio/flower_guard_hit.wav"
+source_file="res://assets/audio/wasp_hit.wav"
 dest_files=["res://.godot/imported/flower_guard_hit.wav-7255de2eb238f5f166041b4350d26246.sample"]
 
 [params]

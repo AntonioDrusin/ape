@@ -222,7 +222,7 @@ func _set_pollen(carrying: bool, type: PlantData.PlantType) -> void:
 
 
 ## Plays the small "pollen lost" puff + sound, shared by shedding, a fizzled
-## pollination attempt, and an enemy knocking pollen off on touch.
+## pollination attempt, and a hazard knocking pollen off on touch.
 func _play_pollen_puff() -> void:
 	pollen_puff.restart()
 	pollen_puff.emitting = true
@@ -314,8 +314,8 @@ func steal_water(amount: float) -> void:
 	water_level_changed.emit(water_level)
 
 
-## Called by an enemy on touch (duck-typed, mirrors steal_water()): knocks
-## the carried pollen off. No-op if not carrying any, since the enemy calls
+## Called by a hazard on touch (duck-typed, mirrors steal_water()): knocks
+## the carried pollen off. No-op if not carrying any, since the hazard calls
 ## this unconditionally on every touch.
 func lose_pollen() -> void:
 	if not has_pollen:
